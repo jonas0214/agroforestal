@@ -20,13 +20,13 @@
     </div>
 
     <!-- Contenido principal -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
 
         <!-- Galería de imágenes (izquierda) -->
         <div>
           <!-- Imagen principal -->
-          <div class="bg-white border border-[#E8DDD0] flex items-center justify-center h-[420px] mb-3 overflow-hidden">
+          <div class="bg-white border border-[#E8DDD0] rounded-2xl flex items-center justify-center h-[280px] sm:h-[380px] lg:h-[420px] mb-3 overflow-hidden">
             @if (activeImg()) {
               <img [src]="activeImg()!" [alt]="product()!.name"
                    class="max-w-full max-h-full object-contain p-6 transition-opacity duration-300">

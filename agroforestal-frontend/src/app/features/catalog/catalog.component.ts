@@ -22,6 +22,7 @@ export class CatalogComponent implements OnInit {
   selectedCategory = '';
   selectedBrand = '';
   currentPage = 1;
+  filtersOpen = signal(false);
 
   constructor(
     private productService: ProductService,
@@ -74,5 +75,13 @@ export class CatalogComponent implements OnInit {
     this.selectedCategory = '';
     this.selectedBrand = '';
     this.router.navigate(['/catalogo']);
+  }
+
+  getCategoryName(slug: string): string {
+    return this.categories().find(c => c.slug === slug)?.name || slug;
+  }
+
+  getBrandName(slug: string): string {
+    return this.brands().find(b => b.slug === slug)?.name || slug;
   }
 }

@@ -1,156 +1,243 @@
 <div class="bg-[#FAF7F0] min-h-screen">
 
-  <!-- Header del catálogo -->
+  <!-- Header -->
   <div class="bg-white border-b border-[#E8DDD0]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="h-px w-8 bg-brand-orange"></div>
-        <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Agroforestal de Colombia</span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div class="flex items-center gap-3 mb-1.5">
+        <div class="h-px w-6 bg-brand-orange"></div>
+        <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Agroforestal</span>
       </div>
-      <h1 class="font-serif text-3xl md:text-4xl text-[#3B2A1A]">Catálogo de productos</h1>
-      <p class="text-[#A08060] text-sm mt-1">Maquinaria, accesorios y herramientas agrícolas de las mejores marcas</p>
+      <h1 class="font-serif text-2xl sm:text-3xl md:text-4xl text-[#3B2A1A]">Catálogo de productos</h1>
+      <p class="text-[#A08060] text-sm mt-1 hidden sm:block">Maquinaria, accesorios y herramientas de las mejores marcas</p>
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex flex-col lg:flex-row gap-8">
+  <!-- Barra de búsqueda + toggle filtros (mobile) -->
+  <div class="bg-white border-b border-[#E8DDD0] sticky top-[70px] z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex gap-3">
+      <!-- Búsqueda -->
+      <div class="flex-1 relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#C8A882]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input [(ngModel)]="searchTerm" (keyup.enter)="applyFilters()" type="text"
+          placeholder="Buscar productos..."
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-[#3B2A1A] bg-[#FAF7F0] border border-[#E8DDD0] focus:outline-none focus:border-brand-orange transition-colors">
+      </div>
+      <!-- Toggle filtros mobile -->
+      <button (click)="filtersOpen.set(!filtersOpen())"
+        class="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+        [class.bg-brand-orange]="filtersOpen() || selectedCategory || selectedBrand"
+        [class.text-white]="filtersOpen() || selectedCategory || selectedBrand"
+        [class.bg-[#FAF7F0]]="!filtersOpen() && !selectedCategory && !selectedBrand"
+        [class.text-[#3B2A1A]]="!filtersOpen() && !selectedCategory && !selectedBrand"
+        style="border: 1px solid #E8DDD0;">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+        </svg>
+        Filtros
+        @if (selectedCategory || selectedBrand) {
+          <span class="w-2 h-2 bg-white rounded-full"></span>
+        }
+      </button>
+    </div>
 
-      <!-- Sidebar filtros -->
-      <aside class="lg:w-56 shrink-0">
-        <div class="bg-white border border-[#E8DDD0] p-5 sticky top-24">
+    <!-- Chips de filtros activos -->
+    @if (selectedCategory || selectedBrand) {
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex flex-wrap gap-2">
+        @if (selectedCategory) {
+          <button (click)="selectedCategory = ''; applyFilters()"
+            class="flex items-center gap-1.5 bg-brand-orange/10 text-brand-orange text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-orange/20">
+            {{ getCategoryName(selectedCategory) }}
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        }
+        @if (selectedBrand) {
+          <button (click)="selectedBrand = ''; applyFilters()"
+            class="flex items-center gap-1.5 bg-brand-orange/10 text-brand-orange text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-orange/20">
+            {{ getBrandName(selectedBrand) }}
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        }
+        <button (click)="clearFilters()" class="text-[#A08060] text-xs underline">Limpiar todo</button>
+      </div>
+    }
+  </div>
 
-          <div class="mb-5">
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A08060] mb-3">Buscar</p>
-            <input [(ngModel)]="searchTerm" (keyup.enter)="applyFilters()" type="text"
-              placeholder="Nombre del producto..."
-              class="w-full border border-[#E8DDD0] px-3 py-2 text-sm text-[#3B2A1A] focus:outline-none focus:border-brand-orange transition-colors">
+  <!-- Filtros expandibles mobile -->
+  @if (filtersOpen()) {
+    <div class="lg:hidden bg-white border-b border-[#E8DDD0] px-4 py-5">
+      <div class="max-w-7xl mx-auto grid grid-cols-2 gap-6">
+        <!-- Categorías -->
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Categoría</p>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="cat-m" value="" [(ngModel)]="selectedCategory" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
+              <span class="text-sm text-[#3B2A1A]">Todas</span>
+            </label>
+            @for (cat of categories(); track cat.id) {
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="cat-m" [value]="cat.slug" [(ngModel)]="selectedCategory" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
+                <span class="text-sm text-[#3B2A1A]">{{ cat.name }}</span>
+              </label>
+            }
           </div>
+        </div>
+        <!-- Marcas -->
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Marca</p>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="brand-m" value="" [(ngModel)]="selectedBrand" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
+              <span class="text-sm text-[#3B2A1A]">Todas</span>
+            </label>
+            @for (brand of brands(); track brand.id) {
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="brand-m" [value]="brand.slug" [(ngModel)]="selectedBrand" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
+                <span class="text-sm text-[#3B2A1A]">{{ brand.name }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 
+  <!-- Contenido principal -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+    <div class="flex gap-8">
+
+      <!-- Sidebar desktop -->
+      <aside class="hidden lg:block w-52 shrink-0">
+        <div class="bg-white rounded-2xl border border-[#E8DDD0] p-5 sticky top-40">
           <div class="mb-5">
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A08060] mb-3">Categoría</p>
-            <div class="space-y-1.5">
+            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Categoría</p>
+            <div class="space-y-2">
               <label class="flex items-center gap-2 cursor-pointer group">
-                <input type="radio" name="cat" value="" [(ngModel)]="selectedCategory" (change)="applyFilters()"
-                  class="accent-brand-orange">
+                <input type="radio" name="cat" value="" [(ngModel)]="selectedCategory" (change)="applyFilters()" class="accent-brand-orange">
                 <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">Todas</span>
               </label>
               @for (cat of categories(); track cat.id) {
                 <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="cat" [value]="cat.slug" [(ngModel)]="selectedCategory" (change)="applyFilters()"
-                    class="accent-brand-orange">
+                  <input type="radio" name="cat" [value]="cat.slug" [(ngModel)]="selectedCategory" (change)="applyFilters()" class="accent-brand-orange">
                   <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">{{ cat.name }}</span>
                 </label>
               }
             </div>
           </div>
-
-          <div class="mb-5">
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A08060] mb-3">Marca</p>
-            <div class="space-y-1.5">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Marca</p>
+            <div class="space-y-2">
               <label class="flex items-center gap-2 cursor-pointer group">
-                <input type="radio" name="brand" value="" [(ngModel)]="selectedBrand" (change)="applyFilters()"
-                  class="accent-brand-orange">
+                <input type="radio" name="brand" value="" [(ngModel)]="selectedBrand" (change)="applyFilters()" class="accent-brand-orange">
                 <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">Todas</span>
               </label>
               @for (brand of brands(); track brand.id) {
                 <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="brand" [value]="brand.slug" [(ngModel)]="selectedBrand" (change)="applyFilters()"
-                    class="accent-brand-orange">
+                  <input type="radio" name="brand" [value]="brand.slug" [(ngModel)]="selectedBrand" (change)="applyFilters()" class="accent-brand-orange">
                   <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">{{ brand.name }}</span>
                 </label>
               }
             </div>
           </div>
-
-          <button (click)="clearFilters()"
-            class="w-full text-center text-[10px] font-bold uppercase tracking-[0.2em] border border-[#E8DDD0] text-[#A08060] hover:border-brand-orange hover:text-brand-orange py-2.5 transition-colors">
-            Limpiar filtros
-          </button>
         </div>
       </aside>
 
       <!-- Grid de productos -->
-      <div class="flex-1">
+      <div class="flex-1 min-w-0">
 
         @if (loading()) {
-          <div class="flex items-center justify-center h-64">
-            <div class="animate-spin rounded-full h-10 w-10 border-2 border-brand-orange border-t-transparent"></div>
+          <div class="flex flex-col items-center justify-center py-24 gap-4">
+            <div class="w-10 h-10 rounded-full border-2 border-brand-orange border-t-transparent animate-spin"></div>
+            <p class="text-[#A08060] text-sm">Cargando productos...</p>
           </div>
+
         } @else if (products().length === 0) {
-          <div class="text-center py-20 bg-white border border-[#E8DDD0]">
-            <svg class="w-16 h-16 text-[#D4B896] mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <p class="font-serif text-xl text-[#3B2A1A] mb-2">Sin resultados</p>
-            <p class="text-[#A08060] text-sm mb-6">Intenta con otros filtros</p>
+          <div class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#E8DDD0] text-center px-8">
+            <div class="w-16 h-16 rounded-2xl bg-[#F5EEE4] flex items-center justify-center mb-4">
+              <svg class="w-8 h-8 text-[#D4B896]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+            <p class="font-serif text-xl text-[#3B2A1A] mb-1">Sin resultados</p>
+            <p class="text-[#A08060] text-sm mb-6">Intenta con otros filtros o busca otro término</p>
             <button (click)="clearFilters()"
-              class="text-[10px] font-bold uppercase tracking-[0.2em] border border-[#3B2A1A] text-[#3B2A1A] hover:bg-[#3B2A1A] hover:text-white px-8 py-3 transition-all">
-              Ver todos
+              class="text-xs font-bold uppercase tracking-widest bg-[#3B2A1A] text-white px-8 py-3 rounded-xl hover:bg-brand-orange transition-colors">
+              Ver todos los productos
             </button>
           </div>
+
         } @else {
           <!-- Contador -->
-          <p class="text-[#A08060] text-xs uppercase tracking-widest mb-5">
-            {{ pagination().total || products().length }} productos encontrados
+          <p class="text-[#A08060] text-xs uppercase tracking-widest mb-4">
+            {{ pagination().total || products().length }} producto{{ (pagination().total || products().length) !== 1 ? 's' : '' }}
           </p>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-px bg-[#E8DDD0]">
-            @for (product of products(); track product.id) {
+          <!-- Grid responsive -->
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-4">
+            @for (product of products(); track product.id; let i = $index) {
               <a [routerLink]="['/catalogo', product.id]"
-                 class="group bg-white hover:bg-[#FAF7F0] transition-colors duration-300 flex flex-col">
+                 class="group bg-white rounded-2xl overflow-hidden border border-[#E8DDD0] hover:border-brand-orange/30 hover:shadow-xl hover:shadow-brand-orange/5 transition-all duration-300 hover:-translate-y-0.5 flex flex-col"
+                 data-aos="fade-up" [attr.data-aos-delay]="(i % 3) * 60">
 
                 <!-- Imagen -->
-                <div class="relative bg-white h-56 flex items-center justify-center overflow-hidden border-b border-[#E8DDD0]">
+                <div class="relative bg-[#F5EEE4] overflow-hidden"
+                     style="aspect-ratio: 1;">
                   @if (product.cover_image) {
                     <img [src]="product.cover_image" [alt]="product.name"
-                         class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500">
+                         class="w-full h-full object-contain p-3 sm:p-4 group-hover:scale-105 transition-transform duration-500">
                   } @else {
-                    <svg class="w-20 h-20 text-[#E8DDD0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75"
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+                    <div class="w-full h-full flex items-center justify-center">
+                      <svg class="w-12 h-12 sm:w-16 sm:h-16 text-[#D4B896]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                    </div>
                   }
 
-                  @if (product.status === 'out_of_stock') {
-                    <div class="absolute top-0 right-0 bg-gray-800 text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-widest">
-                      Agotado
-                    </div>
-                  }
-                  @if (product.sale_price) {
-                    <div class="absolute top-0 left-0 bg-brand-orange text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-widest">
-                      Oferta
-                    </div>
-                  }
+                  <!-- Badges -->
+                  <div class="absolute top-2 left-2 right-2 flex justify-between">
+                    @if (product.sale_price) {
+                      <span class="bg-brand-orange text-white text-[9px] sm:text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wide">Oferta</span>
+                    } @else { <span></span> }
+                    @if (product.status === 'out_of_stock') {
+                      <span class="bg-gray-800/80 text-white text-[9px] sm:text-[10px] font-semibold px-2 py-1 rounded-lg">Agotado</span>
+                    }
+                  </div>
                 </div>
 
                 <!-- Info -->
-                <div class="p-5 flex flex-col flex-1">
+                <div class="p-3 sm:p-4 flex flex-col flex-1">
                   @if (product.brand) {
-                    <p class="text-[9px] font-bold uppercase tracking-[0.25em] text-brand-orange mb-1.5">{{ product.brand.name }}</p>
+                    <p class="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange mb-1">{{ product.brand.name }}</p>
                   }
-                  <h3 class="font-semibold text-[#3B2A1A] text-sm leading-snug mb-1 group-hover:text-brand-orange transition-colors line-clamp-2">
+                  <h3 class="font-semibold text-[#3B2A1A] text-xs sm:text-sm leading-snug line-clamp-2 mb-auto group-hover:text-brand-orange transition-colors">
                     {{ product.name }}
                   </h3>
                   @if (product.sku) {
-                    <p class="text-[10px] text-[#A08060] mb-3">Ref. {{ product.sku }}</p>
+                    <p class="text-[9px] text-[#C8A882] mt-1 hidden sm:block">Ref. {{ product.sku }}</p>
                   }
-                  <div class="mt-auto pt-3 border-t border-[#F0E8D5] flex items-end justify-between">
+
+                  <div class="flex items-end justify-between mt-3 pt-3 border-t border-[#F0E8D5]">
                     <div>
                       @if (product.price) {
                         @if (product.sale_price) {
-                          <p class="text-[#A08060] line-through text-xs">${{ product.price | number:'1.0-0' }}</p>
-                          <p class="font-black text-xl text-brand-orange">${{ product.sale_price | number:'1.0-0' }}<span class="text-xs font-normal">*</span></p>
+                          <p class="text-[#C8A882] line-through text-[10px] sm:text-xs leading-none">${{ product.price | number:'1.0-0' }}</p>
+                          <p class="font-black text-base sm:text-lg text-brand-orange leading-tight">${{ product.sale_price | number:'1.0-0' }}</p>
                         } @else {
-                          <p class="font-black text-xl text-brand-orange">${{ product.price | number:'1.0-0' }}<span class="text-xs font-normal">*</span></p>
+                          <p class="font-black text-base sm:text-lg text-brand-orange leading-tight">${{ product.price | number:'1.0-0' }}</p>
                         }
                       } @else {
-                        <p class="text-[#A08060] text-sm italic">Consultar precio</p>
+                        <p class="text-[#C8A882] text-xs italic">Consultar</p>
                       }
                     </div>
-                    <svg class="w-4 h-4 text-brand-orange group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                    </svg>
+                    <div class="w-8 h-8 rounded-xl bg-brand-orange/10 group-hover:bg-brand-orange flex items-center justify-center transition-colors shrink-0">
+                      <svg class="w-3.5 h-3.5 text-brand-orange group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </a>
@@ -159,13 +246,16 @@
 
           <!-- Paginación -->
           @if ((pagination().last_page || 1) > 1) {
-            <div class="flex items-center justify-center gap-1 mt-10">
+            <div class="flex items-center justify-center gap-2 mt-10">
               @for (page of [].constructor(pagination().last_page || 1); track $index) {
                 <button (click)="goToPage($index + 1)"
-                  [class]="($index + 1) === currentPage
-                    ? 'bg-brand-orange text-white border-brand-orange'
-                    : 'bg-white text-[#3B2A1A]/60 border-[#E8DDD0] hover:border-brand-orange'"
-                  class="w-10 h-10 border text-sm font-semibold transition-colors">
+                  class="w-10 h-10 rounded-xl text-sm font-bold transition-all"
+                  [class.bg-brand-orange]="($index + 1) === currentPage"
+                  [class.text-white]="($index + 1) === currentPage"
+                  [class.shadow-lg]="($index + 1) === currentPage"
+                  [class.bg-white]="($index + 1) !== currentPage"
+                  [class.text-[#3B2A1A]]="($index + 1) !== currentPage"
+                  style="border: 1px solid #E8DDD0;">
                   {{ $index + 1 }}
                 </button>
               }
