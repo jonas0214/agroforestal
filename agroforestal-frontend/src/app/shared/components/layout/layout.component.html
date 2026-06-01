@@ -32,11 +32,20 @@
            class="text-[#3B2A1A]/60 hover:text-brand-orange text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors">Blog</a>
       </div>
 
-      <!-- Carrito -->
-      <button (click)="cart.isOpen.set(true)" class="relative hidden md:flex items-center gap-2 text-[#3B2A1A]/60 hover:text-brand-orange transition-colors">
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+      <!-- Carrito pill -->
+      <button (click)="cart.isOpen.set(true)"
+        class="hidden md:flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+        [style]="cart.count() > 0
+          ? 'background: linear-gradient(135deg,#F36821,#C2410C); color:white; padding: 8px 14px; border-radius: 999px; box-shadow: 0 4px 14px rgba(243,104,33,0.35);'
+          : 'background: rgba(59,42,26,0.07); color: #6B4C3B; padding: 8px 14px; border-radius: 999px;'">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
         @if (cart.count() > 0) {
-          <span class="absolute -top-2 -right-2 w-5 h-5 bg-brand-orange text-white text-[9px] font-black rounded-full flex items-center justify-center">{{ cart.count() }}</span>
+          <span class="text-xs font-black">{{ cart.count() }}</span>
+        } @else {
+          <span class="text-xs font-semibold">Carrito</span>
         }
       </button>
 
@@ -91,63 +100,119 @@
   <router-outlet />
 </main>
 
-<!-- CARRITO LATERAL -->
+<!-- CARRITO — Liquid Glass -->
 @if (cart.isOpen()) {
-  <!-- Overlay -->
-  <div class="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm" (click)="cart.isOpen.set(false)"></div>
+  <!-- Overlay con blur -->
+  <div class="fixed inset-0 z-50" style="background: rgba(30,20,10,0.45); backdrop-filter: blur(8px);"
+       (click)="cart.isOpen.set(false)"></div>
 
-  <!-- Panel -->
-  <div class="fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 flex flex-col shadow-2xl">
+  <!-- Panel flotante con glass effect -->
+  <div class="fixed z-50 flex flex-col"
+       style="top: 16px; right: 16px; bottom: 16px; width: min(400px, calc(100vw - 32px));
+              background: rgba(255,255,255,0.82);
+              backdrop-filter: blur(28px) saturate(180%);
+              -webkit-backdrop-filter: blur(28px) saturate(180%);
+              border: 1px solid rgba(255,255,255,0.6);
+              border-radius: 24px;
+              box-shadow: 0 32px 64px rgba(59,42,26,0.18), 0 0 0 1px rgba(255,255,255,0.4) inset;">
 
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-5 border-b border-[#E8DDD0]">
-      <div>
-        <h2 class="font-serif text-xl text-[#3B2A1A]">Tu carrito</h2>
-        <p class="text-[#A08060] text-xs">{{ cart.count() }} {{ cart.count() === 1 ? 'producto' : 'productos' }}</p>
+    <div class="flex items-center justify-between px-6 pt-6 pb-4"
+         style="border-bottom: 1px solid rgba(232,221,208,0.6);">
+      <div class="flex items-center gap-3">
+        <!-- Ícono carrito -->
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center"
+             style="background: rgba(243,104,33,0.12);">
+          <svg class="w-5 h-5 text-brand-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="font-serif text-lg text-[#3B2A1A] leading-none">Tu carrito</h2>
+          <p class="text-[#A08060] text-xs mt-0.5">{{ cart.count() }} {{ cart.count() === 1 ? 'producto' : 'productos' }}</p>
+        </div>
       </div>
-      <button (click)="cart.isOpen.set(false)" class="w-8 h-8 flex items-center justify-center text-[#A08060] hover:text-[#3B2A1A] transition-colors">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <button (click)="cart.isOpen.set(false)"
+        class="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+        style="background: rgba(160,128,96,0.12);">
+        <svg class="w-4 h-4 text-[#A08060]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
       </button>
     </div>
 
     <!-- Items -->
-    <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+    <div class="flex-1 overflow-y-auto px-5 py-4 space-y-3">
       @if (cart.items().length === 0) {
-        <div class="text-center py-16">
-          <svg class="w-14 h-14 text-[#E8DDD0] mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <div class="flex flex-col items-center justify-center h-full py-12 text-center">
+          <div class="w-20 h-20 rounded-3xl flex items-center justify-center mb-5"
+               style="background: rgba(243,104,33,0.08);">
+            <svg class="w-10 h-10 text-brand-orange/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
           <p class="font-serif text-lg text-[#3B2A1A] mb-1">Carrito vacío</p>
-          <p class="text-[#A08060] text-sm">Agrega productos desde el catálogo</p>
+          <p class="text-[#A08060] text-sm">Explora el catálogo y agrega productos</p>
+          <button (click)="cart.isOpen.set(false)"
+            class="mt-6 text-xs font-bold uppercase tracking-widest text-brand-orange border border-brand-orange/30 px-5 py-2.5 rounded-xl hover:bg-brand-orange hover:text-white transition-all">
+            Ver catálogo
+          </button>
         </div>
       }
+
       @for (item of cart.items(); track item.id) {
-        <div class="flex gap-3 pb-4 border-b border-[#F0E8D5]">
+        <div class="flex gap-3 p-3 rounded-2xl transition-colors"
+             style="background: rgba(255,255,255,0.7); border: 1px solid rgba(232,221,208,0.5);">
+
           <!-- Imagen -->
-          <div class="w-16 h-16 bg-[#FAF7F0] flex items-center justify-center shrink-0 overflow-hidden">
+          <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 flex items-center justify-center"
+               style="background: rgba(250,247,240,0.9);">
             @if (item.cover_image) {
-              <img [src]="item.cover_image" [alt]="item.name" class="w-full h-full object-contain p-1">
+              <img [src]="item.cover_image" [alt]="item.name"
+                   class="w-full h-full object-contain p-1.5"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+              <div class="w-full h-full hidden items-center justify-center">
+                <svg class="w-7 h-7 text-[#D4B896]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
             } @else {
-              <svg class="w-8 h-8 text-[#E8DDD0]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <svg class="w-7 h-7 text-[#D4B896]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
             }
           </div>
+
           <!-- Info -->
           <div class="flex-1 min-w-0">
             @if (item.brand) {
-              <p class="text-[9px] font-bold uppercase tracking-widest text-brand-orange mb-0.5">{{ item.brand }}</p>
+              <p class="text-[9px] font-black uppercase tracking-[0.2em] text-brand-orange mb-0.5">{{ item.brand }}</p>
             }
             <p class="text-sm font-semibold text-[#3B2A1A] leading-snug line-clamp-2">{{ item.name }}</p>
             @if (item.price > 0) {
-              <p class="text-brand-orange font-bold text-sm mt-1">${{ item.price * item.quantity | number:'1.0-0' }}</p>
+              <p class="text-brand-orange font-black text-sm mt-1">${{ item.price * item.quantity | number:'1.0-0' }}</p>
             }
-            <!-- Qty -->
-            <div class="flex items-center gap-2 mt-2">
-              <button (click)="cart.setQty(item.id, item.quantity - 1)" class="w-6 h-6 border border-[#E8DDD0] text-[#3B2A1A] hover:border-brand-orange flex items-center justify-center text-sm font-bold transition-colors">−</button>
-              <span class="text-sm font-semibold text-[#3B2A1A] w-5 text-center">{{ item.quantity }}</span>
-              <button (click)="cart.setQty(item.id, item.quantity + 1)" class="w-6 h-6 border border-[#E8DDD0] text-[#3B2A1A] hover:border-brand-orange flex items-center justify-center text-sm font-bold transition-colors">+</button>
+            <!-- Qty control pill -->
+            <div class="flex items-center gap-1 mt-2">
+              <button (click)="cart.setQty(item.id, item.quantity - 1)"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold transition-all hover:bg-brand-orange hover:text-white"
+                style="background: rgba(160,128,96,0.1); color: #3B2A1A;">−</button>
+              <span class="text-sm font-bold text-[#3B2A1A] w-7 text-center">{{ item.quantity }}</span>
+              <button (click)="cart.setQty(item.id, item.quantity + 1)"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold transition-all hover:bg-brand-orange hover:text-white"
+                style="background: rgba(160,128,96,0.1); color: #3B2A1A;">+</button>
             </div>
           </div>
+
           <!-- Eliminar -->
-          <button (click)="cart.remove(item.id)" class="text-[#E8DDD0] hover:text-red-400 transition-colors shrink-0 mt-1">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          <button (click)="cart.remove(item.id)"
+            class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 self-start transition-all hover:bg-red-50"
+            style="color: #D4B896;">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
           </button>
         </div>
       }
@@ -155,18 +220,28 @@
 
     <!-- Footer -->
     @if (cart.items().length > 0) {
-      <div class="px-6 py-5 border-t border-[#E8DDD0] space-y-4 bg-[#FAF7F0]">
+      <div class="px-5 pb-5 pt-4 space-y-3"
+           style="border-top: 1px solid rgba(232,221,208,0.6);">
+
         @if (cart.total() > 0) {
-          <div class="flex items-center justify-between">
-            <span class="text-[#A08060] text-sm uppercase tracking-widest">Total estimado</span>
+          <div class="flex items-center justify-between px-1">
+            <span class="text-[#A08060] text-xs uppercase tracking-widest">Total estimado</span>
             <span class="font-black text-xl text-[#3B2A1A]">${{ cart.total() | number:'1.0-0' }}</span>
           </div>
         }
+
+        <!-- CTA principal -->
         <a routerLink="/cotizacion" (click)="cart.isOpen.set(false)"
-           class="flex items-center justify-center gap-2 w-full bg-brand-orange hover:bg-brand-orange-700 text-white font-bold py-4 text-sm uppercase tracking-widest transition-all">
-          Solicitar cotización →
+           class="flex items-center justify-center gap-2 w-full text-white font-black py-4 text-sm uppercase tracking-widest transition-all hover:opacity-90 active:scale-[0.98]"
+           style="background: linear-gradient(135deg, #F36821, #C2410C); border-radius: 14px; box-shadow: 0 8px 24px rgba(243,104,33,0.35);">
+          Solicitar cotización
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
         </a>
-        <button (click)="cart.clear()" class="w-full text-center text-[10px] text-[#A08060] hover:text-red-400 uppercase tracking-widest transition-colors">
+
+        <button (click)="cart.clear()"
+          class="w-full text-center text-[10px] text-[#C8A882] hover:text-red-400 uppercase tracking-widest transition-colors py-1">
           Vaciar carrito
         </button>
       </div>
