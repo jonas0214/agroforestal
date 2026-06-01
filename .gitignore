@@ -9,8 +9,8 @@ agroforestal-backend/database/database.sqlite
 
 # Angular
 agroforestal-frontend/node_modules/
-agroforestal-frontend/dist/
 agroforestal-frontend/.angular/
+# dist/ se incluye — el servidor no tiene Node.js para compilar
 
 # OS
 .DS_Store
