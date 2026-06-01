@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Fondo blanco circular -->
+  <circle cx="100" cy="100" r="98" fill="white" stroke="#e5e7eb" stroke-width="2"/>
+
+  <!-- Rayos del sol (naranja) -->
+  <g transform="translate(100,80)">
+    <!-- Rayos principales -->
+    <line x1="0" y1="-52" x2="0" y2="-35" stroke="#F36821" stroke-width="7" stroke-linecap="round"/>
+    <line x1="0" y1="-52" x2="0" y2="-35" stroke="#F36821" stroke-width="7" stroke-linecap="round" transform="rotate(30)"/>
+    <line x1="0" y1="-52" x2="0" y2="-35" stroke="#F36821" stroke-width="7" stroke-linecap="round" transform="rotate(60)"/>
+    <line x1="0" y1="-52" x2="0" y2="-35" stroke="#F36821" stroke-width="7" stroke-linecap="round" transform="rotate(-30)"/>
+    <line x1="0" y1="-52" x2="0" y2="-35" stroke="#F36821" stroke-width="7" stroke-linecap="round" transform="rotate(-60)"/>
+    <line x1="0" y1="-52" x2="0" y2="-35" stroke="#F36821" stroke-width="7" stroke-linecap="round" transform="rotate(90)"/>
+    <line x1="0" y1="-52" x2="0" y2="-35" stroke="#F36821" stroke-width="7" stroke-linecap="round" transform="rotate(-90)"/>
+    <!-- Sol semicírculo -->
+    <path d="M -28 0 A 28 28 0 0 1 28 0 Z" fill="#F36821"/>
+    <path d="M -22 0 A 22 22 0 0 1 22 0 Z" fill="#F9913A"/>
+  </g>
+
+  <!-- Colina verde oscura (fondo) -->
+  <path d="M 10 125 Q 55 85 100 105 Q 145 85 190 125 L 190 175 L 10 175 Z" fill="#2E7D32"/>
+
+  <!-- Colina verde clara (frente) -->
+  <path d="M 10 140 Q 50 108 100 122 Q 150 108 190 140 L 190 175 L 10 175 Z" fill="#4CAF50"/>
+
+  <!-- Agua azul -->
+  <path d="M 10 155 Q 55 145 100 152 Q 145 145 190 155 L 190 175 L 10 175 Z" fill="#1976D2"/>
+  <path d="M 10 163 Q 55 155 100 160 Q 145 155 190 163 L 190 175 L 10 175 Z" fill="#42A5F5"/>
+</svg>
