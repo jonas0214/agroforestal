@@ -4,87 +4,148 @@
     <button (click)="openCreate()" class="btn-primary">+ Nuevo producto</button>
   </div>
 
-  <!-- Form Modal -->
+  <!-- Modal -->
   @if (showForm()) {
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8">
+
         <h2 class="text-xl font-bold mb-6">{{ editingId() ? 'Editar' : 'Nuevo' }} producto</h2>
-        <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-              <input formControlName="name" type="text" class="input">
+
+        <!-- PASO 1: Datos del producto -->
+        @if (!savedProduct()) {
+          <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                <input formControlName="name" type="text" class="input">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+                <input formControlName="price" type="number" min="0" class="input">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Precio oferta</label>
+                <input formControlName="sale_price" type="number" min="0" class="input">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                <select formControlName="category_id" class="input">
+                  <option [value]="null">Sin categoría</option>
+                  @for (cat of categories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.name }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                <select formControlName="brand_id" class="input">
+                  <option [value]="null">Sin marca</option>
+                  @for (brand of brands(); track brand.id) {
+                    <option [value]="brand.id">{{ brand.name }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">SKU / Referencia</label>
+                <input formControlName="sku" type="text" class="input">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select formControlName="status" class="input">
+                  <option value="available">Disponible</option>
+                  <option value="out_of_stock">Agotado</option>
+                  <option value="discontinued">Descontinuado</option>
+                </select>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea formControlName="description" rows="3" class="input resize-none"></textarea>
+              </div>
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input formControlName="is_featured" type="checkbox" class="rounded"> Destacado
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input formControlName="is_active" type="checkbox" class="rounded"> Activo
+                </label>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-              <input formControlName="price" type="number" min="0" class="input">
+            <div class="flex gap-3 pt-2">
+              <button type="submit" [disabled]="loading()" class="btn-primary flex-1 justify-center">
+                {{ loading() ? 'Guardando...' : 'Guardar y subir fotos →' }}
+              </button>
+              <button type="button" (click)="closeForm()" class="btn-outline flex-1 text-center">Cancelar</button>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Precio oferta</label>
-              <input formControlName="sale_price" type="number" min="0" class="input">
+          </form>
+        }
+
+        <!-- PASO 2: Fotos (después de guardar) -->
+        @if (savedProduct()) {
+          <div>
+            <!-- Resumen del producto guardado -->
+            <div class="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-6">
+              <svg class="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <div>
+                <p class="font-semibold text-green-800 text-sm">{{ savedProduct()!.name }} guardado</p>
+                <p class="text-xs text-green-600">Ahora puedes agregar fotos al producto</p>
+              </div>
+              <button (click)="form.reset(); savedProduct.set(null)" class="ml-auto text-xs text-green-700 underline">Editar datos</button>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-              <select formControlName="category_id" class="input">
-                <option [value]="null">Sin categoría</option>
-                @for (cat of categories(); track cat.id) {
-                  <option [value]="cat.id">{{ cat.name }}</option>
+
+            <!-- Upload zone -->
+            <label class="block cursor-pointer group mb-5">
+              <div class="border-2 border-dashed border-gray-200 group-hover:border-brand-orange rounded-xl p-8 text-center transition-colors">
+                @if (uploadingImage()) {
+                  <div class="flex justify-center">
+                    <div class="w-8 h-8 border-3 border-brand-orange border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                } @else {
+                  <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <p class="text-sm text-gray-500">Haz clic o arrastra fotos aquí</p>
+                  <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP · Múltiples fotos permitidas</p>
                 }
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
-              <select formControlName="brand_id" class="input">
-                <option [value]="null">Sin marca</option>
-                @for (brand of brands(); track brand.id) {
-                  <option [value]="brand.id">{{ brand.name }}</option>
+              </div>
+              <input type="file" accept="image/*" multiple class="hidden" (change)="onImageSelected($event)">
+            </label>
+
+            <!-- Grid de imágenes subidas -->
+            @if (productImages().length > 0) {
+              <div class="grid grid-cols-3 gap-3 mb-5">
+                @for (img of productImages(); track img.id) {
+                  <div class="relative group">
+                    <img [src]="img.path" alt="" class="w-full h-28 object-cover rounded-lg border border-gray-100">
+                    <button (click)="removeImage(img.id)"
+                      class="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      ×
+                    </button>
+                    @if ($index === 0) {
+                      <span class="absolute bottom-1.5 left-1.5 bg-brand-orange text-white text-[9px] px-2 py-0.5 rounded font-bold">PRINCIPAL</span>
+                    }
+                  </div>
                 }
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-              <input formControlName="sku" type="text" class="input">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-              <select formControlName="status" class="input">
-                <option value="available">Disponible</option>
-                <option value="out_of_stock">Agotado</option>
-                <option value="discontinued">Descontinuado</option>
-              </select>
-            </div>
-            <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-              <textarea formControlName="description" rows="3" class="input resize-none"></textarea>
-            </div>
-            <div class="flex items-center gap-4">
-              <label class="flex items-center gap-2 text-sm">
-                <input formControlName="is_featured" type="checkbox" class="rounded"> Destacado
-              </label>
-              <label class="flex items-center gap-2 text-sm">
-                <input formControlName="is_active" type="checkbox" class="rounded"> Activo
-              </label>
-            </div>
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="submit" [disabled]="loading()" class="btn-primary flex-1 justify-center">
-              {{ loading() ? 'Guardando...' : 'Guardar' }}
+              </div>
+            } @else {
+              <p class="text-sm text-gray-400 text-center mb-5">Sin fotos aún</p>
+            }
+
+            <button (click)="closeForm()" class="btn-primary w-full justify-center">
+              Finalizar
             </button>
-            <button type="button" (click)="showForm.set(false)" class="btn-outline flex-1 text-center">Cancelar</button>
           </div>
-        </form>
+        }
+
       </div>
     </div>
   }
 
-  <!-- Table -->
+  <!-- Tabla de productos -->
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <table class="w-full text-sm">
       <thead class="bg-gray-50 border-b border-gray-100">
         <tr>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Producto</th>
-          <th class="text-left px-6 py-3 text-gray-500 font-semibold">Marca</th>
-          <th class="text-left px-6 py-3 text-gray-500 font-semibold">Precio</th>
+          <th class="text-left px-6 py-3 text-gray-500 font-semibold hidden md:table-cell">Marca</th>
+          <th class="text-left px-6 py-3 text-gray-500 font-semibold hidden md:table-cell">Precio</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Estado</th>
           <th class="text-right px-6 py-3 text-gray-500 font-semibold">Acciones</th>
         </tr>
@@ -93,16 +154,27 @@
         @for (product of products(); track product.id) {
           <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4">
-              <p class="font-medium text-gray-900">{{ product.name }}</p>
-              @if (product.sku) { <p class="text-xs text-gray-400">SKU: {{ product.sku }}</p> }
+              <div class="flex items-center gap-3">
+                @if (product.cover_image) {
+                  <img [src]="product.cover_image" [alt]="product.name" class="w-10 h-10 object-cover rounded-lg shrink-0">
+                } @else {
+                  <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  </div>
+                }
+                <div>
+                  <p class="font-medium text-gray-900">{{ product.name }}</p>
+                  @if (product.sku) { <p class="text-xs text-gray-400">Ref. {{ product.sku }}</p> }
+                </div>
+              </div>
             </td>
-            <td class="px-6 py-4 text-gray-600">{{ product.brand?.name || '—' }}</td>
-            <td class="px-6 py-4 text-gray-600">
+            <td class="px-6 py-4 text-gray-600 hidden md:table-cell">{{ product.brand?.name || '—' }}</td>
+            <td class="px-6 py-4 text-gray-600 hidden md:table-cell">
               @if (product.price) { ${{ product.price | number:'1.0-0' }} } @else { Consultar }
             </td>
             <td class="px-6 py-4">
               <span [class]="product.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'" class="badge-status">
-                {{ product.status === 'available' ? 'Disponible' : product.status }}
+                {{ product.status === 'available' ? 'Disponible' : product.status === 'out_of_stock' ? 'Agotado' : 'Descont.' }}
               </span>
             </td>
             <td class="px-6 py-4 text-right space-x-2">

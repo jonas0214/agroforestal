@@ -64,6 +64,15 @@ class MediaController extends Controller
         return response()->json($image);
     }
 
+    public function deleteProductImage(int $id)
+    {
+        $image = \App\Models\ProductImage::findOrFail($id);
+        $relative = str_replace(url('/storage') . '/', '', $image->path);
+        Storage::disk('public')->delete($relative);
+        $image->delete();
+        return response()->json(['message' => 'deleted']);
+    }
+
     private function storePublic($file, string $folder): string
     {
         $name = Str::uuid() . '.' . $file->getClientOriginalExtension();

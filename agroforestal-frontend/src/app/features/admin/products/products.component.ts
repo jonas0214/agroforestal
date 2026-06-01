@@ -1,8 +1,10 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../../core/services/product.service';
-import { Product, Category, Brand } from '../../../core/models/product.model';
+import { Product, Category, Brand, ProductImage } from '../../../core/models/product.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-products',
@@ -12,14 +14,19 @@ import { Product, Category, Brand } from '../../../core/models/product.model';
 })
 export class ProductsComponent implements OnInit {
   private productService = inject(ProductService);
-  private fb = inject(FormBuilder);
+  private http           = inject(HttpClient);
+  private fb             = inject(FormBuilder);
+  private api            = environment.apiUrl;
 
-  products = signal<Product[]>([]);
-  categories = signal<Category[]>([]);
-  brands = signal<Brand[]>([]);
-  showForm = signal(false);
-  editingId = signal<number | null>(null);
-  loading = signal(false);
+  products       = signal<Product[]>([]);
+  categories     = signal<Category[]>([]);
+  brands         = signal<Brand[]>([]);
+  showForm       = signal(false);
+  editingId      = signal<number | null>(null);
+  loading        = signal(false);
+  productImages  = signal<ProductImage[]>([]);
+  uploadingImage = signal(false);
+  savedProduct   = signal<Product | null>(null);
 
   form = this.fb.group({
     name:        ['', Validators.required],
@@ -46,12 +53,16 @@ export class ProductsComponent implements OnInit {
 
   openCreate() {
     this.editingId.set(null);
+    this.savedProduct.set(null);
+    this.productImages.set([]);
     this.form.reset({ is_active: true, is_featured: false, status: 'available' });
     this.showForm.set(true);
   }
 
   openEdit(p: Product) {
     this.editingId.set(p.id);
+    this.savedProduct.set(p);
+    this.productImages.set(p.images || []);
     this.form.patchValue(p as any);
     this.showForm.set(true);
   }
@@ -63,7 +74,48 @@ export class ProductsComponent implements OnInit {
     const req = this.editingId()
       ? this.productService.updateProduct(this.editingId()!, data)
       : this.productService.createProduct(data);
-    req.subscribe(() => { this.loading.set(false); this.showForm.set(false); this.loadAll(); });
+
+    req.subscribe(product => {
+      this.loading.set(false);
+      this.editingId.set(product.id);
+      this.savedProduct.set(product);
+      this.loadAll();
+    });
+  }
+
+  onImageSelected(event: Event) {
+    const files = Array.from((event.target as HTMLInputElement).files || []);
+    files.forEach(f => this.uploadImage(f));
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  private uploadImage(file: File) {
+    const productId = this.editingId();
+    if (!productId) return;
+    this.uploadingImage.set(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('product_id', productId.toString());
+    fd.append('order', this.productImages().length.toString());
+    this.http.post<ProductImage>(`${this.api}/admin/media/product-image`, fd).subscribe({
+      next: img => {
+        this.productImages.update(imgs => [...imgs, img]);
+        this.uploadingImage.set(false);
+      },
+      error: () => this.uploadingImage.set(false),
+    });
+  }
+
+  removeImage(id: number) {
+    this.http.delete(`${this.api}/admin/media/product-image/${id}`).subscribe(() => {
+      this.productImages.update(imgs => imgs.filter(i => i.id !== id));
+    });
+  }
+
+  closeForm() {
+    this.showForm.set(false);
+    this.savedProduct.set(null);
+    this.loadAll();
   }
 
   delete(id: number) {

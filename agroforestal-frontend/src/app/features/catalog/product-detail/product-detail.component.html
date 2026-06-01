@@ -1,78 +1,149 @@
 @if (loading()) {
   <div class="flex items-center justify-center h-64">
-    <div class="animate-spin rounded-full h-12 w-12 border-4 border-brand-orange border-t-transparent"></div>
+    <div class="animate-spin rounded-full h-10 w-10 border-2 border-brand-orange border-t-transparent"></div>
   </div>
 } @else if (product()) {
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <a routerLink="/catalogo" class="inline-flex items-center gap-2 text-gray-500 hover:text-brand-orange mb-6 transition-colors">
-      ← Volver al catálogo
-    </a>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-      <!-- Images -->
-      <div>
-        <div class="bg-gray-50 rounded-2xl overflow-hidden h-96 flex items-center justify-center mb-4">
-          @if (activeImg()) {
-            <img [src]="activeImg()" [alt]="product()!.name" class="max-w-full max-h-full object-contain">
-          } @else {
-            <span class="text-8xl">🌿</span>
-          }
-        </div>
-        @if (product()!.images && product()!.images!.length > 0) {
-          <div class="flex gap-3">
-            @for (img of product()!.images!; track img.id) {
-              <button (click)="activeImg.set(img.path)" class="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden border-2 transition-colors"
-                [class.border-brand-orange]="activeImg() === img.path" [class.border-transparent]="activeImg() !== img.path">
-                <img [src]="img.path" [alt]="img.alt || product()!.name" class="w-full h-full object-cover">
-              </button>
-            }
-          </div>
-        }
-      </div>
+  <div class="bg-[#FAF7F0] min-h-screen">
 
-      <!-- Info -->
-      <div>
-        @if (product()!.brand) {
-          <p class="text-brand-orange font-semibold uppercase text-sm mb-2">{{ product()!.brand!.name }}</p>
-        }
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-4">{{ product()!.name }}</h1>
-        @if (product()!.price) {
-          <div class="flex items-center gap-3 mb-6">
-            @if (product()!.sale_price) {
-              <span class="text-gray-400 line-through text-xl">${{ product()!.price | number:'1.0-0' }}</span>
-              <span class="text-brand-orange font-bold text-3xl">${{ product()!.sale_price | number:'1.0-0' }}</span>
-              <span class="bg-brand-orange text-white text-xs font-bold px-2 py-1 rounded">OFERTA</span>
-            } @else {
-              <span class="text-brand-orange font-bold text-3xl">${{ product()!.price | number:'1.0-0' }}</span>
-            }
-          </div>
-        } @else {
-          <p class="text-gray-500 text-xl mb-6">Precio disponible al consultar</p>
-        }
-
-        <span [class]="product()!.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'" class="text-sm font-semibold px-3 py-1 rounded-full mb-6 inline-block">
-          {{ product()!.status === 'available' ? 'Disponible' : product()!.status === 'out_of_stock' ? 'Agotado' : 'Descontinuado' }}
-        </span>
-
-        @if (product()!.description) {
-          <p class="text-gray-600 leading-relaxed mb-6">{{ product()!.description }}</p>
-        }
-
-        <div class="flex flex-col sm:flex-row gap-3 mt-6">
-          <a routerLink="/cotizacion" class="btn-primary flex-1 justify-center">Solicitar cotización</a>
-          <a routerLink="/servicio-tecnico" class="btn-outline flex-1 text-center">Solicitar servicio</a>
-        </div>
-
-        @if (product()!.sku) {
-          <p class="text-xs text-gray-400 mt-4">SKU: {{ product()!.sku }}</p>
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b border-[#E8DDD0]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <a routerLink="/catalogo" class="inline-flex items-center gap-2 text-[#A08060] hover:text-brand-orange text-xs uppercase tracking-widest transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Productos
+        </a>
+        @if (product()!.category) {
+          <span class="text-[#E8DDD0] mx-2">·</span>
+          <span class="text-[#A08060] text-xs uppercase tracking-widest">{{ product()!.category!.name }}</span>
         }
       </div>
     </div>
 
-    @if (product()!.details) {
-      <div class="mt-12 bg-gray-50 rounded-2xl p-8">
-        <h2 class="text-2xl font-bold mb-4">Descripción detallada</h2>
-        <div class="prose max-w-none text-gray-600" [innerHTML]="product()!.details"></div>
+    <!-- Contenido principal -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+        <!-- Galería de imágenes (izquierda) -->
+        <div>
+          <!-- Imagen principal -->
+          <div class="bg-white border border-[#E8DDD0] flex items-center justify-center h-[420px] mb-3 overflow-hidden">
+            @if (activeImg()) {
+              <img [src]="activeImg()!" [alt]="product()!.name"
+                   class="max-w-full max-h-full object-contain p-6 transition-opacity duration-300">
+            } @else {
+              <svg class="w-28 h-28 text-[#E8DDD0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            }
+          </div>
+
+          <!-- Thumbnails -->
+          @if (product()!.images && product()!.images!.length > 1) {
+            <div class="flex gap-2 overflow-x-auto pb-1">
+              @for (img of product()!.images!; track img.id) {
+                <button (click)="activeImg.set(img.path)"
+                  class="w-20 h-20 bg-white border-2 flex items-center justify-center shrink-0 overflow-hidden transition-colors"
+                  [class.border-brand-orange]="activeImg() === img.path"
+                  [class.border-[#E8DDD0]]="activeImg() !== img.path">
+                  <img [src]="img.path" [alt]="img.alt || product()!.name" class="w-full h-full object-contain p-1">
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Info del producto (derecha) -->
+        <div class="flex flex-col">
+
+          <!-- Marca -->
+          @if (product()!.brand) {
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-orange mb-3">
+              {{ product()!.brand!.name }}
+            </p>
+          }
+
+          <!-- Nombre -->
+          <h1 class="font-serif text-4xl text-[#3B2A1A] leading-tight mb-1">
+            {{ product()!.name }}
+          </h1>
+
+          <!-- Línea divisoria estilo STIHL -->
+          <div class="w-10 h-0.5 bg-brand-orange my-4"></div>
+
+          <!-- Precio -->
+          @if (product()!.price) {
+            <div class="mb-1">
+              @if (product()!.sale_price) {
+                <div class="flex items-baseline gap-3">
+                  <span class="font-black text-4xl text-brand-orange">
+                    ${{ product()!.sale_price | number:'1.0-0' }}<sup class="text-base font-normal">*</sup>
+                  </span>
+                  <span class="text-[#A08060] line-through text-xl">${{ product()!.price | number:'1.0-0' }}</span>
+                  <span class="bg-brand-orange text-white text-[9px] font-bold px-2 py-1 uppercase tracking-widest">Oferta</span>
+                </div>
+              } @else {
+                <span class="font-black text-4xl text-brand-orange">
+                  ${{ product()!.price | number:'1.0-0' }}<sup class="text-base font-normal">*</sup>
+                </span>
+              }
+              <p class="text-[#A08060] text-xs mt-1">* Precio sugerido público. IVA incluido.</p>
+            </div>
+          } @else {
+            <p class="text-[#A08060] text-lg mb-3 italic">Precio disponible al consultar</p>
+          }
+
+          <!-- Disponibilidad -->
+          <div class="flex items-center gap-2 my-4 py-4 border-t border-b border-[#E8DDD0]">
+            <div class="flex items-center gap-2">
+              @if (product()!.status === 'available') {
+                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                <span class="text-sm font-semibold text-green-700">Disponible en tienda</span>
+              } @else if (product()!.status === 'out_of_stock') {
+                <span class="text-sm font-semibold text-red-600">Agotado temporalmente</span>
+              } @else {
+                <span class="text-sm font-semibold text-gray-500">Descontinuado</span>
+              }
+            </div>
+          </div>
+
+          <!-- CTAs -->
+          <div class="space-y-3 mb-6">
+            <a routerLink="/cotizacion"
+               class="flex items-center justify-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest transition-all duration-300 w-full">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Solicitar cotización
+            </a>
+            <a routerLink="/servicio-tecnico"
+               class="flex items-center justify-center gap-3 border border-[#3B2A1A]/30 text-[#3B2A1A] hover:border-brand-orange hover:text-brand-orange font-semibold px-8 py-4 text-sm uppercase tracking-widest transition-all duration-300 w-full">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Servicio técnico
+            </a>
+          </div>
+
+          <!-- Referencia -->
+          @if (product()!.sku) {
+            <div class="flex items-center gap-2 text-[#A08060] text-xs">
+              <span class="uppercase tracking-widest">Ref.</span>
+              <span class="font-semibold text-[#3B2A1A]">{{ product()!.sku }}</span>
+            </div>
+          }
+        </div>
       </div>
-    }
+
+      <!-- Descripción -->
+      @if (product()!.description || product()!.details) {
+        <div class="mt-12 border-t border-[#E8DDD0] pt-10">
+          <h2 class="font-serif text-2xl text-[#3B2A1A] mb-6">Descripción del producto</h2>
+          @if (product()!.description) {
+            <p class="text-[#6B4C3B] leading-relaxed mb-4 max-w-3xl">{{ product()!.description }}</p>
+          }
+          @if (product()!.details) {
+            <div class="prose max-w-3xl text-[#6B4C3B]" [innerHTML]="product()!.details"></div>
+          }
+        </div>
+      }
+    </div>
   </div>
 }
