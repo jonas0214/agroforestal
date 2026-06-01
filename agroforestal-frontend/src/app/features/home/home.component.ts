@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, AfterViewInit, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProductService } from '../../core/services/product.service';
@@ -19,17 +19,17 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   featuredProducts = signal<Product[]>([]);
   activeSection    = signal(0);
   swiperInstance: any = null;
+  swiperReady      = false;
   private observer: IntersectionObserver | null = null;
 
   heroSlides = [
-    { bg: 'https://picsum.photos/id/10/1920/1080',  label: 'Naturaleza y campo' },
-    { bg: 'https://picsum.photos/id/28/1920/1080',  label: 'Maquinaria agrícola' },
-    { bg: 'https://picsum.photos/id/106/1920/1080', label: 'Herramientas' },
+    { bg: 'https://picsum.photos/id/10/1920/1080',  label: '' },
+    { bg: 'https://picsum.photos/id/28/1920/1080',  label: '' },
+    { bg: 'https://picsum.photos/id/106/1920/1080', label: '' },
   ];
 
   brands = ['STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita'];
 
-  // Duplicado para marquee infinito — la animación translada exactamente -50%
   marqueeBrands = [
     'STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita',
     'STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita',
@@ -56,15 +56,30 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: '5★',   label: 'Calidad garantizada' },
   ];
 
+  constructor() {
+    // Reactivo: cuando settings carguen del API, actualiza slides y reinicia Swiper
+    effect(() => {
+      const images = this.settingsService.heroImages();
+      if (images.length === 0) return;
+
+      this.heroSlides = images.map(url => ({ bg: url, label: '' }));
+
+      if (!isPlatformBrowser(this.platformId)) return;
+
+      // Si Swiper ya estaba inicializado, destruirlo y recrear con las nuevas imágenes
+      if (this.swiperReady) {
+        this.swiperInstance?.destroy(true, true);
+        this.swiperInstance = null;
+        this.swiperReady = false;
+        setTimeout(() => this.initSwiper(), 80);
+      }
+    });
+  }
+
   ngOnInit() {
     this.productService.getProducts({ featured: true }).subscribe(res => {
       this.featuredProducts.set(res.data.slice(0, 6));
     });
-
-    const heroFromSettings = this.settingsService.heroImages();
-    if (heroFromSettings.length > 0) {
-      this.heroSlides = heroFromSettings.map(url => ({ bg: url, label: '' }));
-    }
   }
 
   ngAfterViewInit() {
@@ -91,6 +106,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       autoplay:    { delay: 5500, disableOnInteraction: false, pauseOnMouseEnter: true },
       pagination:  { el: '.swiper-pagination', clickable: true, dynamicBullets: true },
     });
+    this.swiperReady = true;
   }
 
   private initSectionObserver() {
