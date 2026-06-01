@@ -1,0 +1,17 @@
+# Laravel
+agroforestal-backend/vendor/
+agroforestal-backend/.env
+agroforestal-backend/storage/*.key
+agroforestal-backend/public/storage
+agroforestal-backend/public/hot
+agroforestal-backend/.phpunit.result.cache
+agroforestal-backend/database/database.sqlite
+
+# Angular
+agroforestal-frontend/node_modules/
+agroforestal-frontend/dist/
+agroforestal-frontend/.angular/
+
+# OS
+.DS_Store
+Thumbs.db

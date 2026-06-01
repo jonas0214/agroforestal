@@ -1,0 +1,381 @@
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  DOTS NAV — Indicador lateral de sección             -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="fixed right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3 hidden lg:flex">
+  @for (section of navSections; track section.id; let i = $index) {
+    <button
+      (click)="scrollToSection(section.id)"
+      [title]="section.label"
+      class="group relative flex items-center justify-end gap-2 transition-all duration-300">
+      <!-- Label tooltip -->
+      <span class="absolute right-full mr-3 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+            [class.text-white]="navSections[activeSection()].dark"
+            [class.text-[#3B2A1A]]="!navSections[activeSection()].dark">
+        {{ section.label }}
+      </span>
+      <!-- Dot -->
+      <span class="block transition-all duration-300"
+            [class.w-5]="activeSection() === i"
+            [class.h-1.5]="activeSection() === i"
+            [class.w-1.5]="activeSection() !== i"
+            [class.h-1.5]="activeSection() !== i"
+            [class.bg-brand-orange]="activeSection() === i"
+            [class.bg-white]="activeSection() !== i && navSections[activeSection()].dark"
+            [class.bg-[#3B2A1A]]="activeSection() !== i && !navSections[activeSection()].dark"
+            [class.opacity-30]="activeSection() !== i"
+            style="border-radius: 2px">
+      </span>
+    </button>
+  }
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  HERO                                                  -->
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="sec-hero" class="relative h-screen min-h-[700px] overflow-hidden bg-[#1F1209]">
+
+  <div class="hero-swiper swiper w-full h-full absolute inset-0 z-0">
+    <div class="swiper-wrapper">
+      @for (slide of heroSlides; track $index) {
+        <div class="swiper-slide relative overflow-hidden">
+          <img [src]="slide.bg" [alt]="slide.label"
+               class="absolute inset-0 w-full h-full object-cover object-center scale-105"
+               loading="eager">
+          <div class="absolute inset-0 bg-gradient-to-r from-[#1F1209]/95 via-[#1F1209]/70 to-[#1F1209]/10"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-[#1F1209]/70 via-transparent to-transparent"></div>
+        </div>
+      }
+    </div>
+    <div class="swiper-pagination !bottom-10 z-20"></div>
+  </div>
+
+  <div class="absolute inset-0 z-10 flex items-center">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full">
+      <div class="max-w-[620px]">
+
+        <div class="flex items-center gap-4 mb-8" data-aos="fade-up">
+          <div class="h-px w-12 bg-brand-orange"></div>
+          <span class="text-brand-orange font-semibold text-xs uppercase tracking-[0.25em]">Desde 1977 · Cali, Colombia</span>
+        </div>
+
+        <h1 class="font-serif text-6xl md:text-[82px] text-white leading-[1.02] mb-7 tracking-tight"
+            data-aos="fade-up" data-aos-delay="100">
+          Todo lo que<br>
+          <em class="text-brand-orange not-italic">el campo</em><br>
+          necesita
+        </h1>
+
+        <p class="text-white/65 text-xl leading-relaxed mb-10 max-w-[480px]"
+           data-aos="fade-up" data-aos-delay="200">
+          Maquinaria agrícola, herramientas y repuestos originales.
+          <strong class="text-white font-semibold">Distribuidor oficial STIHL</strong> en el suroccidente colombiano.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4" data-aos="fade-up" data-aos-delay="300">
+          <a routerLink="/catalogo"
+             class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest transition-all duration-300 shadow-2xl shadow-brand-orange/20">
+            Explorar catálogo
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <a routerLink="/cotizacion"
+             class="inline-flex items-center gap-3 border border-white/25 text-white hover:border-white/60 hover:bg-white/5 font-semibold px-8 py-4 text-sm uppercase tracking-widest transition-all duration-300">
+            Solicitar cotización
+          </a>
+        </div>
+
+        <div class="flex items-center gap-4 mt-14" data-aos="fade-up" data-aos-delay="400">
+          <div class="h-px w-10 bg-white/15"></div>
+          <span class="text-white/35 text-[10px] uppercase tracking-[0.3em]">Distribuidor oficial</span>
+          <div class="bg-[#CC0000] px-3 py-1.5">
+            <span class="text-white font-black text-sm tracking-[0.15em]">STIHL</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/30">
+    <span class="text-[9px] uppercase tracking-[0.3em]">Scroll</span>
+    <div class="w-px h-10 bg-gradient-to-b from-white/40 to-transparent animate-pulse"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!--  STATS BAR                    -->
+<!-- ══════════════════════════════ -->
+<section class="bg-[#3B2A1A]">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
+      @for (stat of stats; track stat.label; let i = $index) {
+        <div class="py-10 px-6 text-center" data-aos="fade-up" [attr.data-aos-delay]="i * 80">
+          <p class="font-serif text-5xl text-brand-orange leading-none mb-2">{{ stat.value }}</p>
+          <p class="text-white/40 text-[10px] uppercase tracking-[0.25em]">{{ stat.label }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!--  PRODUCTOS DESTACADOS              -->
+<!-- ═══════════════════════════════════ -->
+@if (featuredProducts().length > 0) {
+<section id="sec-productos" class="py-28 bg-[#FAF7F0]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-16" data-aos="fade-up">
+      <div>
+        <div class="flex items-center gap-4 mb-4">
+          <div class="h-px w-10 bg-brand-orange/50"></div>
+          <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Catálogo selecto</span>
+        </div>
+        <h2 class="font-serif text-4xl md:text-5xl text-[#3B2A1A] leading-tight">
+          Lo más buscado<br><em>del campo</em>
+        </h2>
+      </div>
+      <a routerLink="/catalogo"
+         class="mt-6 md:mt-0 inline-flex items-center gap-3 border border-[#3B2A1A]/30 text-[#3B2A1A] hover:border-brand-orange hover:text-brand-orange text-xs font-semibold uppercase tracking-[0.2em] px-6 py-3 transition-all duration-300">
+        Ver todo el catálogo
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (product of featuredProducts(); track product.id; let i = $index) {
+        <a [routerLink]="['/catalogo', product.id]"
+           class="group bg-white border border-[#E8DDD0] hover:border-brand-orange/30 hover:shadow-2xl hover:shadow-brand-orange/5 transition-all duration-500 hover:-translate-y-1 flex flex-col"
+           data-aos="fade-up" [attr.data-aos-delay]="i * 80">
+
+          <div class="relative h-60 bg-[#F5EEE4] overflow-hidden">
+            @if (product.cover_image) {
+              <img [src]="product.cover_image" [alt]="product.name"
+                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            } @else {
+              <div class="w-full h-full flex items-center justify-center">
+                <svg class="w-20 h-20 text-[#D4B896]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+            }
+            @if (product.is_featured) {
+              <div class="absolute top-0 left-0">
+                <span class="bg-[#3B2A1A] text-white text-[9px] font-bold px-3 py-1.5 uppercase tracking-[0.2em]">Destacado</span>
+              </div>
+            }
+            @if (product.sale_price) {
+              <div class="absolute top-0 right-0">
+                <span class="bg-brand-orange text-white text-[9px] font-bold px-3 py-1.5 uppercase tracking-[0.2em]">Oferta</span>
+              </div>
+            }
+          </div>
+
+          <div class="p-5 flex flex-col flex-1 border-t border-[#E8DDD0]">
+            @if (product.brand) {
+              <p class="text-[9px] text-brand-orange font-bold uppercase tracking-[0.3em] mb-2">{{ product.brand.name }}</p>
+            }
+            <h3 class="font-semibold text-[#3B2A1A] leading-snug line-clamp-2 mb-auto group-hover:text-brand-orange transition-colors duration-300">{{ product.name }}</h3>
+
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-[#F0E8D5]">
+              <div>
+                @if (product.price) {
+                  @if (product.sale_price) {
+                    <span class="text-gray-300 line-through text-sm mr-2">${{ product.price | number:'1.0-0' }}</span>
+                    <span class="font-black text-2xl text-brand-orange">${{ product.sale_price | number:'1.0-0' }}</span>
+                  } @else {
+                    <span class="font-black text-2xl text-brand-orange">${{ product.price | number:'1.0-0' }}</span>
+                  }
+                } @else {
+                  <span class="text-[#A08060] text-sm italic">Consultar precio</span>
+                }
+              </div>
+              <span class="text-[10px] text-brand-orange font-bold uppercase tracking-[0.2em]">Ver más →</span>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+
+  </div>
+</section>
+}
+
+<!-- ═══════════════════════════════════════ -->
+<!--  BANNER PROPUESTA DE VALOR             -->
+<!-- ═══════════════════════════════════════ -->
+<section class="bg-brand-orange py-14">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+      <div data-aos="fade-right">
+        <p class="text-white/70 text-xs uppercase tracking-[0.25em] mb-1">¿Por qué elegirnos?</p>
+        <h3 class="font-serif text-3xl md:text-4xl text-white">47 años siendo el socio<br><em>del agricultor colombiano</em></h3>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-8 shrink-0" data-aos="fade-left" data-aos-delay="100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white/15 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="text-white font-medium text-sm leading-tight">Repuestos<br>originales</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white/15 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="text-white font-medium text-sm leading-tight">Entrega<br>inmediata</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white/15 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </div>
+          <span class="text-white font-medium text-sm leading-tight">Servicio técnico<br>certificado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ -->
+<!--  SERVICIO TÉCNICO               -->
+<!-- ════════════════════════════════ -->
+<section id="sec-servicios" class="py-28 bg-[#2D1F0E] relative overflow-hidden">
+  <div class="absolute inset-0 opacity-[0.035]"
+       style="background-image: radial-gradient(circle at 1px 1px, #F36821 1px, transparent 0); background-size: 28px 28px;"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+
+      <div class="space-y-4" data-aos="fade-right">
+        @for (service of services; track service.title; let i = $index) {
+          <div class="group flex gap-5 border border-white/8 hover:border-brand-orange/30 p-6 transition-all duration-400 cursor-default"
+               data-aos="fade-right" [attr.data-aos-delay]="i * 120">
+            <div class="w-12 h-12 shrink-0 bg-brand-orange/10 group-hover:bg-brand-orange flex items-center justify-center text-xl transition-colors duration-300">
+              {{ service.icon }}
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">{{ service.title }}</h3>
+              <p class="text-white/35 text-sm leading-relaxed">{{ service.desc }}</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div data-aos="fade-left" data-aos-delay="150">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="h-px w-10 bg-brand-orange"></div>
+          <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Servicio técnico</span>
+        </div>
+        <h2 class="font-serif text-5xl md:text-6xl text-white leading-[1.05] mb-6">
+          Tu equipo en<br><em class="text-brand-orange">manos expertas</em>
+        </h2>
+        <p class="text-white/45 text-lg leading-relaxed mb-10">
+          Técnicos certificados por los fabricantes. Atendemos tu maquinaria agrícola con repuestos originales y garantía total de trabajo.
+        </p>
+        <a routerLink="/servicio-tecnico"
+           class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest transition-all duration-300">
+          Solicitar servicio
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ -->
+<!--  MARCAS — Marquee infinito      -->
+<!-- ════════════════════════════════ -->
+<section id="sec-marcas" class="py-20 bg-[#FAF7F0] overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+    <div class="text-center" data-aos="fade-up">
+      <div class="flex items-center justify-center gap-4 mb-3">
+        <div class="h-px w-14 bg-[#C8A882]"></div>
+        <span class="text-[#C8A882] text-[10px] font-bold uppercase tracking-[0.3em]">Con el respaldo de</span>
+        <div class="h-px w-14 bg-[#C8A882]"></div>
+      </div>
+      <h2 class="font-serif text-3xl md:text-4xl text-[#3B2A1A]">Marcas líderes del sector</h2>
+    </div>
+  </div>
+
+  <!-- Marquee strip -->
+  <div class="relative">
+    <!-- Fade left -->
+    <div class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#FAF7F0] to-transparent z-10 pointer-events-none"></div>
+    <!-- Fade right -->
+    <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#FAF7F0] to-transparent z-10 pointer-events-none"></div>
+
+    <!-- Track -->
+    <div class="marquee-track py-2" aria-hidden="true">
+      @for (brand of marqueeBrands; track $index) {
+        <div class="flex items-center shrink-0 px-10">
+          <span class="font-black text-2xl text-[#3B2A1A]/20 tracking-[0.15em] uppercase hover:text-brand-orange/60 transition-colors cursor-default">
+            {{ brand }}
+          </span>
+          <span class="ml-10 w-1.5 h-1.5 bg-brand-orange/25 rotate-45 shrink-0 inline-block"></span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Segunda fila — dirección inversa más lenta -->
+  <div class="relative mt-4">
+    <div class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#FAF7F0] to-transparent z-10 pointer-events-none"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#FAF7F0] to-transparent z-10 pointer-events-none"></div>
+
+    <div class="marquee-track py-2" style="animation-direction: reverse; animation-duration: 36s;" aria-hidden="true">
+      @for (brand of marqueeBrands; track $index) {
+        <div class="flex items-center shrink-0 px-10">
+          <span class="font-serif italic text-xl text-[#3B2A1A]/12 tracking-[0.1em] uppercase cursor-default">
+            {{ brand }}
+          </span>
+          <span class="ml-10 w-1 h-1 bg-[#C8A882]/30 rounded-full shrink-0 inline-block"></span>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════ -->
+<!--  CTA FINAL                        -->
+<!-- ══════════════════════════════════ -->
+<section id="sec-cta" class="relative py-32 overflow-hidden" data-aos="fade-up">
+  <div class="absolute inset-0 bg-gradient-to-br from-[#F36821] via-[#E55A10] to-[#C2410C]"></div>
+  <div class="absolute inset-0 opacity-[0.07]"
+       style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E&quot;);">
+  </div>
+
+  <div class="relative z-10 max-w-3xl mx-auto px-4 text-center">
+    <div class="flex items-center justify-center gap-4 mb-8">
+      <div class="h-px w-12 bg-white/30"></div>
+      <span class="text-white/60 text-[10px] uppercase tracking-[0.3em]">Háblanos hoy</span>
+      <div class="h-px w-12 bg-white/30"></div>
+    </div>
+
+    <h2 class="font-serif text-5xl md:text-6xl text-white leading-tight mb-6">
+      El mejor precio<br><em>del mercado te espera</em>
+    </h2>
+    <p class="text-white/65 text-xl mb-12 leading-relaxed max-w-lg mx-auto">
+      Cuéntanos qué necesitas. Nuestros asesores te responden en menos de 24 horas con la mejor propuesta del mercado.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a routerLink="/cotizacion"
+         class="inline-flex items-center justify-center gap-2 bg-white text-brand-orange font-black px-10 py-4 text-sm uppercase tracking-[0.2em] hover:bg-[#FAF7F0] transition-all duration-300 hover:-translate-y-0.5 shadow-2xl">
+        Cotización gratuita →
+      </a>
+      <a routerLink="/catalogo"
+         class="inline-flex items-center justify-center gap-2 border border-white/30 text-white hover:bg-white/10 font-semibold px-10 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300">
+        Ver productos
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Botón flotante WhatsApp -->
+<a href="https://wa.me/573000000000" target="_blank"
+   class="fixed bottom-8 right-8 z-50 w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-xl shadow-green-500/40 hover:scale-110 transition-all duration-300">
+  <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>

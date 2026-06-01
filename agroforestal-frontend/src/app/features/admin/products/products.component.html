@@ -1,0 +1,120 @@
+<div class="p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Productos</h1>
+    <button (click)="openCreate()" class="btn-primary">+ Nuevo producto</button>
+  </div>
+
+  <!-- Form Modal -->
+  @if (showForm()) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8">
+        <h2 class="text-xl font-bold mb-6">{{ editingId() ? 'Editar' : 'Nuevo' }} producto</h2>
+        <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+              <input formControlName="name" type="text" class="input">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+              <input formControlName="price" type="number" min="0" class="input">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio oferta</label>
+              <input formControlName="sale_price" type="number" min="0" class="input">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+              <select formControlName="category_id" class="input">
+                <option [value]="null">Sin categoría</option>
+                @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+              <select formControlName="brand_id" class="input">
+                <option [value]="null">Sin marca</option>
+                @for (brand of brands(); track brand.id) {
+                  <option [value]="brand.id">{{ brand.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+              <input formControlName="sku" type="text" class="input">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select formControlName="status" class="input">
+                <option value="available">Disponible</option>
+                <option value="out_of_stock">Agotado</option>
+                <option value="discontinued">Descontinuado</option>
+              </select>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea formControlName="description" rows="3" class="input resize-none"></textarea>
+            </div>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 text-sm">
+                <input formControlName="is_featured" type="checkbox" class="rounded"> Destacado
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                <input formControlName="is_active" type="checkbox" class="rounded"> Activo
+              </label>
+            </div>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="submit" [disabled]="loading()" class="btn-primary flex-1 justify-center">
+              {{ loading() ? 'Guardando...' : 'Guardar' }}
+            </button>
+            <button type="button" (click)="showForm.set(false)" class="btn-outline flex-1 text-center">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Table -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b border-gray-100">
+        <tr>
+          <th class="text-left px-6 py-3 text-gray-500 font-semibold">Producto</th>
+          <th class="text-left px-6 py-3 text-gray-500 font-semibold">Marca</th>
+          <th class="text-left px-6 py-3 text-gray-500 font-semibold">Precio</th>
+          <th class="text-left px-6 py-3 text-gray-500 font-semibold">Estado</th>
+          <th class="text-right px-6 py-3 text-gray-500 font-semibold">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (product of products(); track product.id) {
+          <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4">
+              <p class="font-medium text-gray-900">{{ product.name }}</p>
+              @if (product.sku) { <p class="text-xs text-gray-400">SKU: {{ product.sku }}</p> }
+            </td>
+            <td class="px-6 py-4 text-gray-600">{{ product.brand?.name || '—' }}</td>
+            <td class="px-6 py-4 text-gray-600">
+              @if (product.price) { ${{ product.price | number:'1.0-0' }} } @else { Consultar }
+            </td>
+            <td class="px-6 py-4">
+              <span [class]="product.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'" class="badge-status">
+                {{ product.status === 'available' ? 'Disponible' : product.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right space-x-2">
+              <button (click)="openEdit(product)" class="text-brand-orange hover:underline text-xs font-semibold">Editar</button>
+              <button (click)="delete(product.id)" class="text-red-500 hover:underline text-xs font-semibold">Eliminar</button>
+            </td>
+          </tr>
+        }
+        @if (products().length === 0) {
+          <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No hay productos aún</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="text-center mb-12">
+    <h1 class="section-title">Blog Agroforestal</h1>
+    <p class="section-subtitle">Tips de mantenimiento, novedades del sector y consejos agrícolas</p>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-brand-orange border-t-transparent"></div>
+    </div>
+  } @else if (posts().length === 0) {
+    <div class="text-center py-20 text-gray-500">
+      <p class="text-6xl mb-4">📰</p>
+      <p class="text-xl font-semibold">Próximamente</p>
+      <p class="mt-2">Estamos preparando contenido de valor para ti</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      @for (post of posts(); track post.id) {
+        <a [routerLink]="['/blog', post.id]" class="card group">
+          <div class="h-48 bg-gray-100 overflow-hidden flex items-center justify-center">
+            @if (post.cover_image) {
+              <img [src]="post.cover_image" [alt]="post.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            } @else {
+              <span class="text-6xl">🌱</span>
+            }
+          </div>
+          <div class="p-6">
+            <p class="text-xs text-gray-400 mb-2">{{ post.published_at | date:'d MMMM yyyy':'':'es' }}</p>
+            <h2 class="font-bold text-gray-900 text-xl mb-3 group-hover:text-brand-orange transition-colors line-clamp-2">{{ post.title }}</h2>
+            @if (post.excerpt) {
+              <p class="text-gray-500 text-sm line-clamp-3">{{ post.excerpt }}</p>
+            }
+            @if (post.author) {
+              <p class="text-xs text-gray-400 mt-4">Por {{ post.author.name }}</p>
+            }
+          </div>
+        </a>
+      }
+    </div>
+
+    @if ((pagination().last_page || 1) > 1) {
+      <div class="flex justify-center gap-2 mt-12">
+        @for (page of [].constructor(pagination().last_page || 1); track $index) {
+          <button (click)="goToPage($index + 1)"
+            [class]="($index + 1) === currentPage ? 'bg-brand-orange text-white' : 'bg-white text-gray-700'"
+            class="w-10 h-10 rounded-lg border border-gray-200 font-semibold transition-colors">
+            {{ $index + 1 }}
+          </button>
+        }
+      </div>
+    }
+  }
+</div>

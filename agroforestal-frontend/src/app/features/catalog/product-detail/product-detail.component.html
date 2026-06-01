@@ -1,0 +1,78 @@
+@if (loading()) {
+  <div class="flex items-center justify-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-4 border-brand-orange border-t-transparent"></div>
+  </div>
+} @else if (product()) {
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <a routerLink="/catalogo" class="inline-flex items-center gap-2 text-gray-500 hover:text-brand-orange mb-6 transition-colors">
+      ← Volver al catálogo
+    </a>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <!-- Images -->
+      <div>
+        <div class="bg-gray-50 rounded-2xl overflow-hidden h-96 flex items-center justify-center mb-4">
+          @if (activeImg()) {
+            <img [src]="activeImg()" [alt]="product()!.name" class="max-w-full max-h-full object-contain">
+          } @else {
+            <span class="text-8xl">🌿</span>
+          }
+        </div>
+        @if (product()!.images && product()!.images!.length > 0) {
+          <div class="flex gap-3">
+            @for (img of product()!.images!; track img.id) {
+              <button (click)="activeImg.set(img.path)" class="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden border-2 transition-colors"
+                [class.border-brand-orange]="activeImg() === img.path" [class.border-transparent]="activeImg() !== img.path">
+                <img [src]="img.path" [alt]="img.alt || product()!.name" class="w-full h-full object-cover">
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Info -->
+      <div>
+        @if (product()!.brand) {
+          <p class="text-brand-orange font-semibold uppercase text-sm mb-2">{{ product()!.brand!.name }}</p>
+        }
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-4">{{ product()!.name }}</h1>
+        @if (product()!.price) {
+          <div class="flex items-center gap-3 mb-6">
+            @if (product()!.sale_price) {
+              <span class="text-gray-400 line-through text-xl">${{ product()!.price | number:'1.0-0' }}</span>
+              <span class="text-brand-orange font-bold text-3xl">${{ product()!.sale_price | number:'1.0-0' }}</span>
+              <span class="bg-brand-orange text-white text-xs font-bold px-2 py-1 rounded">OFERTA</span>
+            } @else {
+              <span class="text-brand-orange font-bold text-3xl">${{ product()!.price | number:'1.0-0' }}</span>
+            }
+          </div>
+        } @else {
+          <p class="text-gray-500 text-xl mb-6">Precio disponible al consultar</p>
+        }
+
+        <span [class]="product()!.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'" class="text-sm font-semibold px-3 py-1 rounded-full mb-6 inline-block">
+          {{ product()!.status === 'available' ? 'Disponible' : product()!.status === 'out_of_stock' ? 'Agotado' : 'Descontinuado' }}
+        </span>
+
+        @if (product()!.description) {
+          <p class="text-gray-600 leading-relaxed mb-6">{{ product()!.description }}</p>
+        }
+
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          <a routerLink="/cotizacion" class="btn-primary flex-1 justify-center">Solicitar cotización</a>
+          <a routerLink="/servicio-tecnico" class="btn-outline flex-1 text-center">Solicitar servicio</a>
+        </div>
+
+        @if (product()!.sku) {
+          <p class="text-xs text-gray-400 mt-4">SKU: {{ product()!.sku }}</p>
+        }
+      </div>
+    </div>
+
+    @if (product()!.details) {
+      <div class="mt-12 bg-gray-50 rounded-2xl p-8">
+        <h2 class="text-2xl font-bold mb-4">Descripción detallada</h2>
+        <div class="prose max-w-none text-gray-600" [innerHTML]="product()!.details"></div>
+      </div>
+    }
+  </div>
+}
