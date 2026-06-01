@@ -22,11 +22,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   swiperReady      = false;
   private observer: IntersectionObserver | null = null;
 
-  heroSlides = [
-    { bg: 'https://picsum.photos/id/10/1920/1080',  label: '' },
-    { bg: 'https://picsum.photos/id/28/1920/1080',  label: '' },
-    { bg: 'https://picsum.photos/id/106/1920/1080', label: '' },
-  ];
+  // Vacío hasta que el API responda — evita flash de imágenes de fallback
+  heroSlides: { bg: string; label: string }[] = [];
 
   brands = ['STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita'];
 

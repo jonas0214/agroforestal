@@ -34,6 +34,11 @@
 <!-- ══════════════════════════════════════════════════════ -->
 <section id="sec-hero" class="relative h-screen min-h-[700px] overflow-hidden bg-[#1F1209]">
 
+  <!-- Fondo oscuro mientras cargan las imágenes -->
+  @if (heroSlides.length === 0) {
+    <div class="absolute inset-0 z-0 bg-[#1F1209]"></div>
+  }
+
   <div class="hero-swiper swiper w-full h-full absolute inset-0 z-0">
     <div class="swiper-wrapper">
       @for (slide of heroSlides; track $index) {
@@ -46,7 +51,9 @@
         </div>
       }
     </div>
-    <div class="swiper-pagination !bottom-10 z-20"></div>
+    @if (heroSlides.length > 0) {
+      <div class="swiper-pagination !bottom-10 z-20"></div>
+    }
   </div>
 
   <div class="absolute inset-0 z-10 flex items-center">
