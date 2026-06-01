@@ -61,6 +61,12 @@ class MediaController extends Controller
             'order'      => $request->order ?? 0,
         ]);
 
+        // Auto-set como cover_image si el producto no tiene una aún
+        $product = \App\Models\Product::findOrFail($request->product_id);
+        if (!$product->cover_image) {
+            $product->update(['cover_image' => $url]);
+        }
+
         return response()->json($image);
     }
 

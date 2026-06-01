@@ -32,6 +32,14 @@
            class="text-[#3B2A1A]/60 hover:text-brand-orange text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors">Blog</a>
       </div>
 
+      <!-- Carrito -->
+      <button (click)="cart.isOpen.set(true)" class="relative hidden md:flex items-center gap-2 text-[#3B2A1A]/60 hover:text-brand-orange transition-colors">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        @if (cart.count() > 0) {
+          <span class="absolute -top-2 -right-2 w-5 h-5 bg-brand-orange text-white text-[9px] font-black rounded-full flex items-center justify-center">{{ cart.count() }}</span>
+        }
+      </button>
+
       <!-- Auth desktop -->
       <div class="hidden md:flex items-center gap-3">
         @if (auth.isLoggedIn()) {
@@ -82,6 +90,89 @@
 <main class="min-h-screen">
   <router-outlet />
 </main>
+
+<!-- CARRITO LATERAL -->
+@if (cart.isOpen()) {
+  <!-- Overlay -->
+  <div class="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm" (click)="cart.isOpen.set(false)"></div>
+
+  <!-- Panel -->
+  <div class="fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 flex flex-col shadow-2xl">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-[#E8DDD0]">
+      <div>
+        <h2 class="font-serif text-xl text-[#3B2A1A]">Tu carrito</h2>
+        <p class="text-[#A08060] text-xs">{{ cart.count() }} {{ cart.count() === 1 ? 'producto' : 'productos' }}</p>
+      </div>
+      <button (click)="cart.isOpen.set(false)" class="w-8 h-8 flex items-center justify-center text-[#A08060] hover:text-[#3B2A1A] transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Items -->
+    <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      @if (cart.items().length === 0) {
+        <div class="text-center py-16">
+          <svg class="w-14 h-14 text-[#E8DDD0] mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <p class="font-serif text-lg text-[#3B2A1A] mb-1">Carrito vacío</p>
+          <p class="text-[#A08060] text-sm">Agrega productos desde el catálogo</p>
+        </div>
+      }
+      @for (item of cart.items(); track item.id) {
+        <div class="flex gap-3 pb-4 border-b border-[#F0E8D5]">
+          <!-- Imagen -->
+          <div class="w-16 h-16 bg-[#FAF7F0] flex items-center justify-center shrink-0 overflow-hidden">
+            @if (item.cover_image) {
+              <img [src]="item.cover_image" [alt]="item.name" class="w-full h-full object-contain p-1">
+            } @else {
+              <svg class="w-8 h-8 text-[#E8DDD0]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            }
+          </div>
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            @if (item.brand) {
+              <p class="text-[9px] font-bold uppercase tracking-widest text-brand-orange mb-0.5">{{ item.brand }}</p>
+            }
+            <p class="text-sm font-semibold text-[#3B2A1A] leading-snug line-clamp-2">{{ item.name }}</p>
+            @if (item.price > 0) {
+              <p class="text-brand-orange font-bold text-sm mt-1">${{ item.price * item.quantity | number:'1.0-0' }}</p>
+            }
+            <!-- Qty -->
+            <div class="flex items-center gap-2 mt-2">
+              <button (click)="cart.setQty(item.id, item.quantity - 1)" class="w-6 h-6 border border-[#E8DDD0] text-[#3B2A1A] hover:border-brand-orange flex items-center justify-center text-sm font-bold transition-colors">−</button>
+              <span class="text-sm font-semibold text-[#3B2A1A] w-5 text-center">{{ item.quantity }}</span>
+              <button (click)="cart.setQty(item.id, item.quantity + 1)" class="w-6 h-6 border border-[#E8DDD0] text-[#3B2A1A] hover:border-brand-orange flex items-center justify-center text-sm font-bold transition-colors">+</button>
+            </div>
+          </div>
+          <!-- Eliminar -->
+          <button (click)="cart.remove(item.id)" class="text-[#E8DDD0] hover:text-red-400 transition-colors shrink-0 mt-1">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    @if (cart.items().length > 0) {
+      <div class="px-6 py-5 border-t border-[#E8DDD0] space-y-4 bg-[#FAF7F0]">
+        @if (cart.total() > 0) {
+          <div class="flex items-center justify-between">
+            <span class="text-[#A08060] text-sm uppercase tracking-widest">Total estimado</span>
+            <span class="font-black text-xl text-[#3B2A1A]">${{ cart.total() | number:'1.0-0' }}</span>
+          </div>
+        }
+        <a routerLink="/cotizacion" (click)="cart.isOpen.set(false)"
+           class="flex items-center justify-center gap-2 w-full bg-brand-orange hover:bg-brand-orange-700 text-white font-bold py-4 text-sm uppercase tracking-widest transition-all">
+          Solicitar cotización →
+        </a>
+        <button (click)="cart.clear()" class="w-full text-center text-[10px] text-[#A08060] hover:text-red-400 uppercase tracking-widest transition-colors">
+          Vaciar carrito
+        </button>
+      </div>
+    }
+  </div>
+}
 
 <!-- ══════════════════════════════ -->
 <!--  FOOTER                       -->

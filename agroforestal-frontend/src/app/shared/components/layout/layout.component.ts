@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-layout',
@@ -13,6 +14,7 @@ import { SettingsService } from '../../../core/services/settings.service';
 export class LayoutComponent {
   auth            = inject(AuthService);
   settingsService = inject(SettingsService);
+  cart            = inject(CartService);
 
   mobileOpen  = signal(false);
   currentYear = new Date().getFullYear();

@@ -33,6 +33,7 @@ export const routes: Routes = [
       { path: 'blog',       loadComponent: () => import('./features/admin/posts/posts.component').then(m => m.PostsComponent) },
       { path: 'solicitudes', loadComponent: () => import('./features/admin/service-requests/service-requests.component').then(m => m.ServiceRequestsComponent) },
       { path: 'cotizaciones', loadComponent: () => import('./features/admin/quotes/quotes.component').then(m => m.QuotesComponent) },
+      { path: 'categorias',    loadComponent: () => import('./features/admin/categories/categories.component').then(m => m.CategoriesComponent) },
       { path: 'configuracion', loadComponent: () => import('./features/admin/settings/settings.component').then(m => m.SettingsComponent) },
     ],
   },
