@@ -34,6 +34,8 @@
   h1, h2, h3, h4 {
     @apply font-bold tracking-tight;
   }
+  /* Sin cursiva en énfasis de títulos — Zilla Slab itálica no encaja */
+  h1 em, h2 em, h3 em, h4 em { font-style: normal; }
   /* Cifras tabulares para precios y stats */
   .tabular { font-variant-numeric: tabular-nums; }
 }
