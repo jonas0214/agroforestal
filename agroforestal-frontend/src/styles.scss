@@ -28,11 +28,14 @@
 
 @layer base {
   body {
-    @apply font-sans text-gray-800 bg-white;
+    @apply font-sans text-gray-800 bg-white antialiased;
+    text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4 {
     @apply font-bold tracking-tight;
   }
+  /* Cifras tabulares para precios y stats */
+  .tabular { font-variant-numeric: tabular-nums; }
 }
 
 @layer components {

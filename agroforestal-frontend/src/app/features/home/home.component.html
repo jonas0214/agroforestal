@@ -80,7 +80,7 @@
 
         <div class="flex flex-col sm:flex-row gap-4" data-aos="fade-up" data-aos-delay="300">
           <a routerLink="/catalogo"
-             class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest transition-all duration-300 shadow-2xl shadow-brand-orange/20">
+             class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest shadow-lg shadow-brand-orange/25 hover:shadow-xl hover:shadow-brand-orange/30 hover:-translate-y-0.5 transition-all duration-300">
             Explorar catálogo
             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </a>
@@ -116,7 +116,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
       @for (stat of stats; track stat.label; let i = $index) {
         <div class="py-10 px-6 text-center" data-aos="fade-up" [attr.data-aos-delay]="i * 80">
-          <p class="font-serif text-5xl text-brand-orange leading-none mb-2">{{ stat.value }}</p>
+          <p class="font-serif text-5xl text-brand-orange leading-none mb-2 tabular">{{ stat.value }}</p>
           <p class="text-white/40 text-[10px] uppercase tracking-[0.25em]">{{ stat.label }}</p>
         </div>
       }
@@ -128,10 +128,10 @@
 <!--  PRODUCTOS DESTACADOS              -->
 <!-- ═══════════════════════════════════ -->
 @if (featuredProducts().length > 0) {
-<section id="sec-productos" class="py-28 bg-[#FAF7F0]">
+<section id="sec-productos" class="py-32 lg:py-40 bg-[#FAF7F0]">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    <div class="flex flex-col md:flex-row md:items-end justify-between mb-16" data-aos="fade-up">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-20" data-aos="fade-up">
       <div>
         <div class="flex items-center gap-4 mb-4">
           <div class="h-px w-10 bg-brand-orange/50"></div>
@@ -154,7 +154,7 @@
            class="group bg-white border border-[#E8DDD0] hover:border-brand-orange/30 hover:shadow-2xl hover:shadow-brand-orange/5 transition-all duration-500 hover:-translate-y-1 flex flex-col"
            data-aos="fade-up" [attr.data-aos-delay]="i * 80">
 
-          <div class="relative h-60 bg-[#F5EEE4] overflow-hidden">
+          <div class="relative h-64 bg-[#F5EEE4] overflow-hidden">
             @if (product.cover_image) {
               <img [src]="product.cover_image" [alt]="product.name"
                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
@@ -183,22 +183,25 @@
             @if (product.brand) {
               <p class="text-[9px] text-brand-orange font-bold uppercase tracking-[0.3em] mb-2">{{ product.brand.name }}</p>
             }
-            <h3 class="font-semibold text-[#3B2A1A] leading-snug line-clamp-2 mb-auto group-hover:text-brand-orange transition-colors duration-300">{{ product.name }}</h3>
+            <h3 class="font-bold text-[15px] text-[#3B2A1A] leading-snug line-clamp-2 mb-auto group-hover:text-brand-orange transition-colors duration-300">{{ product.name }}</h3>
 
-            <div class="flex items-center justify-between mt-4 pt-4 border-t border-[#F0E8D5]">
-              <div>
+            <div class="mt-4 pt-4 border-t border-[#F0E8D5] flex items-end justify-between gap-3">
+              <div class="flex flex-col tabular">
                 @if (product.price) {
                   @if (product.sale_price) {
-                    <span class="text-gray-300 line-through text-sm mr-2">${{ product.price | number:'1.0-0' }}</span>
-                    <span class="font-black text-2xl text-brand-orange">${{ product.sale_price | number:'1.0-0' }}</span>
+                    <span class="text-gray-400 line-through text-xs leading-none mb-1">${{ product.price | number:'1.0-0' }}</span>
+                    <span class="font-black text-2xl text-[#3B2A1A] leading-none">${{ product.sale_price | number:'1.0-0' }}</span>
                   } @else {
-                    <span class="font-black text-2xl text-brand-orange">${{ product.price | number:'1.0-0' }}</span>
+                    <span class="font-black text-2xl text-[#3B2A1A] leading-none">${{ product.price | number:'1.0-0' }}</span>
                   }
                 } @else {
                   <span class="text-[#A08060] text-sm italic">Consultar precio</span>
                 }
               </div>
-              <span class="text-[10px] text-brand-orange font-bold uppercase tracking-[0.2em]">Ver más →</span>
+              <span class="shrink-0 inline-flex items-center gap-1.5 bg-[#3B2A1A] group-hover:bg-brand-orange text-white text-[10px] font-bold uppercase tracking-[0.15em] px-3.5 py-2.5 transition-colors duration-300">
+                Ver
+                <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              </span>
             </div>
           </div>
         </a>
@@ -212,7 +215,7 @@
 <!-- ═══════════════════════════════════════ -->
 <!--  BANNER PROPUESTA DE VALOR             -->
 <!-- ═══════════════════════════════════════ -->
-<section class="bg-brand-orange py-14">
+<section class="bg-brand-orange py-16">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col md:flex-row items-center justify-between gap-8">
       <div data-aos="fade-right">
@@ -246,7 +249,7 @@
 <!-- ════════════════════════════════ -->
 <!--  SERVICIO TÉCNICO               -->
 <!-- ════════════════════════════════ -->
-<section id="sec-servicios" class="py-28 bg-[#2D1F0E] relative overflow-hidden">
+<section id="sec-servicios" class="py-32 lg:py-40 bg-[#2D1F0E] relative overflow-hidden">
   <div class="absolute inset-0 opacity-[0.035]"
        style="background-image: radial-gradient(circle at 1px 1px, #F36821 1px, transparent 0); background-size: 28px 28px;"></div>
 
@@ -280,7 +283,7 @@
           Técnicos certificados por los fabricantes. Atendemos tu maquinaria agrícola con repuestos originales y garantía total de trabajo.
         </p>
         <a routerLink="/servicio-tecnico"
-           class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest transition-all duration-300">
+           class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest shadow-lg shadow-brand-orange/25 hover:shadow-xl hover:shadow-brand-orange/30 hover:-translate-y-0.5 transition-all duration-300">
           Solicitar servicio
           <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
         </a>
@@ -293,7 +296,7 @@
 <!-- ════════════════════════════════ -->
 <!--  MARCAS — Marquee infinito      -->
 <!-- ════════════════════════════════ -->
-<section id="sec-marcas" class="py-20 bg-[#FAF7F0] overflow-hidden">
+<section id="sec-marcas" class="py-24 lg:py-32 bg-[#FAF7F0] overflow-hidden">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
     <div class="text-center" data-aos="fade-up">
       <div class="flex items-center justify-center gap-4 mb-3">
@@ -346,7 +349,7 @@
 <!-- ══════════════════════════════════ -->
 <!--  CTA FINAL                        -->
 <!-- ══════════════════════════════════ -->
-<section id="sec-cta" class="relative py-32 overflow-hidden" data-aos="fade-up">
+<section id="sec-cta" class="relative py-36 lg:py-44 overflow-hidden" data-aos="fade-up">
   <div class="absolute inset-0 bg-gradient-to-br from-[#F36821] via-[#E55A10] to-[#C2410C]"></div>
   <div class="absolute inset-0 opacity-[0.07]"
        style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E&quot;);">
