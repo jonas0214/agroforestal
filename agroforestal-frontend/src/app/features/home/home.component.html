@@ -165,7 +165,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       @for (card of categoryCards(); track card.cat.id; let i = $index) {
         <a [routerLink]="['/catalogo']" [queryParams]="{ category: card.cat.slug }"
-           class="group relative overflow-hidden rounded-3xl border border-[#E8DDD0] hover:border-brand-orange/40 hover:shadow-2xl hover:shadow-brand-orange/10 transition-all duration-500 hover:-translate-y-1.5 aspect-[4/3] flex"
+           class="group relative overflow-hidden rounded-3xl border border-[#E8DDD0] hover:border-brand-orange/40 hover:shadow-2xl hover:shadow-brand-orange/10 transition-all duration-500 hover:-translate-y-1.5 aspect-[4/5] flex"
            data-aos="fade-up" [attr.data-aos-delay]="i * 70">
 
           @if (card.image) {
