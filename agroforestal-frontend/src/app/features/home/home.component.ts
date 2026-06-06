@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProductService } from '../../core/services/product.service';
 import { SettingsService } from '../../core/services/settings.service';
-import { Product } from '../../core/models/product.model';
+import { Product, Category } from '../../core/models/product.model';
 
 @Component({
   selector: 'app-home',
@@ -17,6 +17,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   settingsService        = inject(SettingsService);
 
   featuredProducts = signal<Product[]>([]);
+  categories       = signal<Category[]>([]);
   activeSection    = signal(0);
   swiperInstance: any = null;
   swiperReady      = false;
@@ -33,8 +34,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   navSections = [
-    { id: 'sec-hero',      label: 'Inicio',    dark: true  },
-    { id: 'sec-productos', label: 'Productos', dark: false },
+    { id: 'sec-hero',       label: 'Inicio',     dark: true  },
+    { id: 'sec-categorias', label: 'Categorías', dark: false },
+    { id: 'sec-productos',  label: 'Productos',  dark: false },
     { id: 'sec-servicios', label: 'Servicios', dark: true  },
     { id: 'sec-marcas',    label: 'Marcas',    dark: false },
     { id: 'sec-cta',       label: 'Contacto',  dark: true  },
@@ -76,6 +78,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.productService.getProducts({ featured: true }).subscribe(res => {
       this.featuredProducts.set(res.data.slice(0, 6));
+    });
+    this.productService.getCategories().subscribe(cats => {
+      this.categories.set(cats.slice(0, 6));
     });
   }
 

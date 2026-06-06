@@ -138,6 +138,61 @@
 </section>
 
 <!-- ═══════════════════════════════════ -->
+<!--  COMPRAR POR CATEGORÍA             -->
+<!-- ═══════════════════════════════════ -->
+@if (categories().length > 0) {
+<section id="sec-categorias" class="py-32 lg:py-40 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-16" data-aos="fade-up">
+      <div>
+        <div class="flex items-center gap-4 mb-4">
+          <div class="h-px w-10 bg-brand-orange/50"></div>
+          <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Explora la tienda</span>
+        </div>
+        <h2 class="font-serif text-4xl md:text-5xl text-[#3B2A1A] leading-tight">
+          Comprar por <em>categoría</em>
+        </h2>
+        <p class="text-[#8B7355] mt-4 max-w-md">Encuentra justo lo que tu campo necesita, organizado por tipo de equipo.</p>
+      </div>
+      <a routerLink="/catalogo"
+         class="mt-6 md:mt-0 inline-flex items-center gap-3 rounded-full border border-[#3B2A1A]/20 text-[#3B2A1A] hover:border-brand-orange hover:text-brand-orange text-xs font-semibold uppercase tracking-[0.2em] px-6 py-3 transition-all duration-300">
+        Ver catálogo completo
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
+      @for (cat of categories(); track cat.id; let i = $index) {
+        <a [routerLink]="['/catalogo']" [queryParams]="{ category: cat.slug }"
+           class="group relative overflow-hidden rounded-3xl bg-[#FAF7F0] border border-[#E8DDD0] hover:border-brand-orange/40 hover:shadow-2xl hover:shadow-brand-orange/5 transition-all duration-500 hover:-translate-y-1 aspect-[4/3] flex"
+           data-aos="fade-up" [attr.data-aos-delay]="i * 70">
+
+          @if (cat.image) {
+            <img [src]="cat.image" [alt]="cat.name"
+                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#1F1209]/85 via-[#1F1209]/25 to-transparent"></div>
+          } @else {
+            <div class="absolute inset-0 bg-gradient-to-br from-[#3B2A1A] to-[#2D1F0E]"></div>
+            <svg class="absolute right-4 top-4 w-16 h-16 text-white/5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 7h-3V6a4 4 0 00-8 0v1H5a1 1 0 00-1 1v11a3 3 0 003 3h10a3 3 0 003-3V8a1 1 0 00-1-1zm-9-1a2 2 0 014 0v1h-4V6z"/></svg>
+          }
+
+          <div class="relative z-10 mt-auto p-5 w-full">
+            <h3 class="font-serif text-xl md:text-2xl text-white leading-tight mb-1">{{ cat.name }}</h3>
+            <span class="inline-flex items-center gap-1.5 text-white/80 group-hover:text-brand-orange text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300">
+              Ver productos
+              <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </span>
+          </div>
+        </a>
+      }
+    </div>
+
+  </div>
+</section>
+}
+
+<!-- ═══════════════════════════════════ -->
 <!--  PRODUCTOS DESTACADOS              -->
 <!-- ═══════════════════════════════════ -->
 @if (featuredProducts().length > 0) {
