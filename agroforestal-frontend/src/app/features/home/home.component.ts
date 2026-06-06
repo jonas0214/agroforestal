@@ -39,6 +39,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     { id: 'sec-productos',  label: 'Productos',  dark: false },
     { id: 'sec-servicios', label: 'Servicios', dark: true  },
     { id: 'sec-marcas',    label: 'Marcas',    dark: false },
+    { id: 'sec-feed',      label: 'Síguenos',  dark: true  },
     { id: 'sec-cta',       label: 'Contacto',  dark: true  },
   ];
 

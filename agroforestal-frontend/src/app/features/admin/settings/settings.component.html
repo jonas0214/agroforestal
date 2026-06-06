@@ -65,6 +65,54 @@
   </div>
 
   <!-- ══════════════════════════ -->
+  <!-- FEED DE CONTENIDO         -->
+  <!-- ══════════════════════════ -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+    <h2 class="font-semibold text-gray-900 mb-1">Feed de contenido (redes)</h2>
+    <p class="text-xs text-gray-400 mb-5">Tus piezas de Instagram/Facebook que aparecen en la galería del home. Recomendado: formato vertical (1080×1350 px), máx. 5 MB.</p>
+
+    <!-- Drop zone -->
+    <label class="block cursor-pointer"
+           (dragover)="$event.preventDefault(); dragOverFeed.set(true)"
+           (dragleave)="dragOverFeed.set(false)"
+           (drop)="onFeedDrop($event)">
+      <div class="rounded-xl border-2 border-dashed transition-all duration-200 p-8 text-center mb-5"
+           [class]="dragOverFeed() ? 'border-brand-orange bg-orange-50' : 'border-gray-200 bg-gray-50 hover:border-brand-orange hover:bg-orange-50'">
+        <div class="text-4xl mb-3">📸</div>
+        @if (uploading()['feed']) {
+          <p class="text-brand-orange font-semibold text-sm">Subiendo imagen...</p>
+        } @else {
+          <p class="text-gray-600 font-medium">Arrastra tus piezas aquí o haz clic para seleccionar</p>
+          <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP · hasta 5 MB · puedes subir varias</p>
+        }
+        <input type="file" accept="image/*" multiple class="hidden" (change)="onFeedSelected($event)">
+      </div>
+    </label>
+
+    <!-- Grid de imágenes actuales -->
+    @if (feedImages().length > 0) {
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        @for (img of feedImages(); track img; let i = $index) {
+          <div class="relative group rounded-xl overflow-hidden aspect-[4/5] bg-gray-100">
+            <img [src]="img" alt="Feed {{ i + 1 }}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <button (click)="removeFeed(img)"
+                      class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+                Eliminar
+              </button>
+            </div>
+            <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
+              {{ i + 1 }}
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="text-center text-gray-400 text-sm py-4">Sin piezas del feed aún. Sube la primera arriba.</p>
+    }
+  </div>
+
+  <!-- ══════════════════════════ -->
   <!-- IMÁGENES DEL HERO (SLIDER) -->
   <!-- ══════════════════════════ -->
   <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">

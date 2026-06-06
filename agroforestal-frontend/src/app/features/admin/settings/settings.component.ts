@@ -18,6 +18,7 @@ export class SettingsComponent implements OnInit {
   uploading      = signal<Record<string, boolean>>({});
   saved          = signal(false);
   dragOver       = signal(false);
+  dragOverFeed   = signal(false);
 
   form = this.fb.group({
     site_name:    ['Agroforestal de Colombia S.A.S'],
@@ -86,6 +87,32 @@ export class SettingsComponent implements OnInit {
   removeHero(url: string) {
     this.settings.deleteHeroImage(url).subscribe();
   }
+
+  onFeedDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragOverFeed.set(false);
+    const files = Array.from(event.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+    files.forEach(f => this.uploadFeed(f));
+  }
+
+  onFeedSelected(event: Event) {
+    const files = Array.from((event.target as HTMLInputElement).files || []);
+    files.forEach(f => this.uploadFeed(f));
+  }
+
+  uploadFeed(file: File) {
+    this.uploading.update(u => ({ ...u, feed: true }));
+    this.settings.uploadFeedImage(file).subscribe({
+      next: () => this.uploading.update(u => ({ ...u, feed: false })),
+      error: () => this.uploading.update(u => ({ ...u, feed: false })),
+    });
+  }
+
+  removeFeed(url: string) {
+    this.settings.deleteFeedImage(url).subscribe();
+  }
+
+  feedImages() { return this.settings.feedImages(); }
 
   saveSettings() {
     this.settings.updateSettings(this.form.value as any).subscribe(() => {

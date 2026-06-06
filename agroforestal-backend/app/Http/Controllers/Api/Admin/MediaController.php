@@ -55,6 +55,35 @@ class MediaController extends Controller
         return response()->json(['images' => $images]);
     }
 
+    public function uploadFeedImage(Request $request)
+    {
+        $request->validate(['file' => 'required|image|max:5120']);
+        $url = $this->storePublic($request->file('file'), 'feed');
+
+        $raw    = Setting::get('feed_images', '[]');
+        $images = json_decode($raw, true) ?: [];
+        $images[] = $url;
+        Setting::set('feed_images', json_encode($images));
+
+        return response()->json(['url' => $url, 'images' => $images]);
+    }
+
+    public function deleteFeedImage(Request $request)
+    {
+        $request->validate(['url' => 'required|string']);
+
+        // Eliminar archivo físico del disco
+        $relative = ltrim(str_replace(url('/storage'), '', $request->url), '/');
+        if ($relative && !str_starts_with($relative, 'http')) {
+            Storage::disk('public')->delete($relative);
+        }
+
+        $raw    = Setting::get('feed_images', '[]');
+        $images = array_values(array_filter(json_decode($raw, true) ?: [], fn($u) => $u !== $request->url));
+        Setting::set('feed_images', json_encode($images));
+        return response()->json(['images' => $images]);
+    }
+
     public function uploadProductImage(Request $request)
     {
         $request->validate(['file' => 'required|image|max:4096', 'product_id' => 'required|exists:products,id']);

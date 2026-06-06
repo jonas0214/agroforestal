@@ -7,6 +7,7 @@ export interface SiteSettings {
   logo_url?: string;
   favicon_url?: string;
   hero_images?: string;
+  feed_images?: string;
   site_name?: string;
   site_tagline?: string;
   whatsapp?: string;
@@ -31,6 +32,12 @@ export class SettingsService {
 
   heroImages(): string[] {
     const raw = this.settings().hero_images;
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch { return []; }
+  }
+
+  feedImages(): string[] {
+    const raw = this.settings().feed_images;
     if (!raw) return [];
     try { return JSON.parse(raw); } catch { return []; }
   }
@@ -70,6 +77,20 @@ export class SettingsService {
   deleteHeroImage(url: string) {
     return this.http.delete<{ images: string[] }>(`${this.api}/admin/media/hero`, { body: { url } }).pipe(
       tap(r => this.settings.update(s => ({ ...s, hero_images: JSON.stringify(r.images) })))
+    );
+  }
+
+  uploadFeedImage(file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<{ url: string; images: string[] }>(`${this.api}/admin/media/feed`, fd).pipe(
+      tap(r => this.settings.update(s => ({ ...s, feed_images: JSON.stringify(r.images) })))
+    );
+  }
+
+  deleteFeedImage(url: string) {
+    return this.http.delete<{ images: string[] }>(`${this.api}/admin/media/feed`, { body: { url } }).pipe(
+      tap(r => this.settings.update(s => ({ ...s, feed_images: JSON.stringify(r.images) })))
     );
   }
 

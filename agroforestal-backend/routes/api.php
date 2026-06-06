@@ -62,6 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/media/favicon',          [MediaController::class, 'uploadFavicon']);
         Route::post('/admin/media/hero',             [MediaController::class, 'uploadHeroImage']);
         Route::delete('/admin/media/hero',           [MediaController::class, 'deleteHeroImage']);
+        Route::post('/admin/media/feed',             [MediaController::class, 'uploadFeedImage']);
+        Route::delete('/admin/media/feed',           [MediaController::class, 'deleteFeedImage']);
         Route::post('/admin/media/product-image',    [MediaController::class, 'uploadProductImage']);
         Route::delete('/admin/media/product-image/{id}', [MediaController::class, 'deleteProductImage']);
     });
