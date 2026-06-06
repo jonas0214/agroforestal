@@ -42,6 +42,13 @@ class MediaController extends Controller
     public function deleteHeroImage(Request $request)
     {
         $request->validate(['url' => 'required|string']);
+
+        // Eliminar archivo físico del disco
+        $relative = ltrim(str_replace(url('/storage'), '', $request->url), '/');
+        if ($relative && !str_starts_with($relative, 'http')) {
+            Storage::disk('public')->delete($relative);
+        }
+
         $raw    = Setting::get('hero_images', '[]');
         $images = array_values(array_filter(json_decode($raw, true) ?: [], fn($u) => $u !== $request->url));
         Setting::set('hero_images', json_encode($images));

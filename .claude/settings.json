@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx ng *)"
+      "Bash(npx ng *)",
+      "Skill(code-review)",
+      "Skill(code-review:*)",
+      "Bash(/usr/bin/git diff *)",
+      "Bash(/usr/bin/wc -l)",
+      "Bash(/usr/bin/git show *)",
+      "Bash(/usr/bin/git log *)"
     ]
   }
 }
