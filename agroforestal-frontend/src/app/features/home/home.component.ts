@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, AfterViewInit, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { Product, Category } from '../../core/models/product.model';
@@ -17,7 +18,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   settingsService        = inject(SettingsService);
 
   featuredProducts = signal<Product[]>([]);
-  categories       = signal<Category[]>([]);
+  categoryCards    = signal<{ cat: Category; image: string | null; count: number }[]>([]);
   activeSection    = signal(0);
   swiperInstance: any = null;
   swiperReady      = false;
@@ -80,8 +81,22 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.productService.getProducts({ featured: true }).subscribe(res => {
       this.featuredProducts.set(res.data.slice(0, 6));
     });
+    // Carga categorías + un sondeo de productos para imagen y conteo.
+    // Solo se muestran categorías con productos (sin tarjetas vacías).
     this.productService.getCategories().subscribe(cats => {
-      this.categories.set(cats.slice(0, 6));
+      const top = cats.slice(0, 8);
+      if (top.length === 0) return;
+      forkJoin(top.map(cat => this.productService.getProducts({ category: cat.slug }))).subscribe(results => {
+        const cards = top
+          .map((cat, i) => ({
+            cat,
+            image: cat.image || results[i].data.find(p => p.cover_image)?.cover_image || null,
+            count: results[i].total,
+          }))
+          .filter(c => c.count > 0)
+          .slice(0, 6);
+        this.categoryCards.set(cards);
+      });
     });
   }
 
