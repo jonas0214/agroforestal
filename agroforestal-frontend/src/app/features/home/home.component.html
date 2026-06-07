@@ -32,7 +32,7 @@
 <!-- ══════════════════════════════════════════════════════ -->
 <!--  HERO                                                  -->
 <!-- ══════════════════════════════════════════════════════ -->
-<section id="sec-hero" class="relative h-screen min-h-[700px] overflow-hidden bg-[#1F1209] -mt-20">
+<section id="sec-hero" class="relative h-screen min-h-[560px] md:min-h-[700px] overflow-hidden bg-[#1F1209] -mt-20">
 
   <!-- Fondo oscuro mientras cargan las imágenes -->
   @if (heroSlides.length === 0) {
@@ -44,7 +44,7 @@
       @for (slide of heroSlides; track $index) {
         <div class="swiper-slide relative overflow-hidden">
           <img [src]="slide.bg" [alt]="slide.label"
-               class="absolute inset-0 w-full h-full object-cover object-center scale-105"
+               class="absolute inset-0 w-full h-full object-cover object-center"
                loading="eager">
           <div class="absolute inset-0 bg-gradient-to-r from-[#1F1209]/95 via-[#1F1209]/70 to-[#1F1209]/10"></div>
           <div class="absolute inset-0 bg-gradient-to-t from-[#1F1209]/70 via-transparent to-transparent"></div>
@@ -69,8 +69,8 @@
         </div>
 
         <!-- Headline -->
-        <h1 class="font-serif text-white mb-5 md:mb-6 tracking-tight"
-            style="font-size: clamp(2.25rem, 9vw, 5.25rem); line-height: 1;"
+        <h1 class="font-serif text-white mb-4 md:mb-6 tracking-tight"
+            style="font-size: clamp(1.9rem, 7.5vw, 5.25rem); line-height: 1.02;"
             data-aos="fade-up" data-aos-delay="100">
           Todo lo que<br>
           <span class="text-brand-orange">el campo</span><br>
@@ -84,14 +84,14 @@
         </p>
 
         <!-- CTAs -->
-        <div class="flex flex-col sm:flex-row gap-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4" data-aos="fade-up" data-aos-delay="300">
           <a routerLink="/catalogo"
-             class="group inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-xl hover:shadow-brand-orange/40 hover:-translate-y-0.5 transition-all duration-300">
+             class="group inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-6 py-3.5 md:px-8 md:py-4 text-xs md:text-sm uppercase tracking-widest rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-xl hover:shadow-brand-orange/40 hover:-translate-y-0.5 transition-all duration-300">
             Explorar catálogo
             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </a>
           <a routerLink="/cotizacion"
-             class="group inline-flex items-center justify-center gap-2 border border-white/25 text-white hover:border-white/60 hover:bg-white/5 font-semibold px-8 py-4 text-sm uppercase tracking-widest rounded-full transition-all duration-300">
+             class="group inline-flex items-center justify-center gap-2 border border-white/25 text-white hover:border-white/60 hover:bg-white/5 font-semibold px-6 py-3.5 md:px-8 md:py-4 text-xs md:text-sm uppercase tracking-widest rounded-full transition-all duration-300">
             Cotización gratis <span class="text-brand-orange font-bold">· en 24 h</span>
           </a>
         </div>
@@ -381,9 +381,9 @@
 
       <!-- Imagen real -->
       <div class="relative max-w-lg mx-auto lg:mx-0 w-full" data-aos="fade-right">
-        <div class="relative rounded-[2.5rem] overflow-hidden aspect-[4/5] shadow-2xl shadow-[#3B2A1A]/25 ring-1 ring-[#3B2A1A]/5">
+        <div class="relative rounded-[2.5rem] overflow-hidden aspect-[3/4] sm:aspect-[4/5] shadow-2xl shadow-[#3B2A1A]/25 ring-1 ring-[#3B2A1A]/5">
           <img [src]="settingsService.storyImageUrl()" alt="Agroforestal de Colombia"
-               class="w-full h-full object-cover">
+               class="w-full h-full object-cover object-top">
           <div class="absolute inset-0 bg-gradient-to-t from-[#1F1209]/45 via-transparent to-transparent"></div>
         </div>
         <!-- Badge años flotante -->
@@ -404,7 +404,7 @@
           <div class="h-px w-10 bg-brand-orange"></div>
           <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Nuestra historia · Desde 1977</span>
         </div>
-        <h2 class="font-serif text-5xl md:text-6xl text-[#3B2A1A] leading-[1.05] mb-7">
+        <h2 class="font-serif text-3xl sm:text-4xl md:text-6xl text-[#3B2A1A] leading-[1.1] md:leading-[1.05] mb-6 md:mb-7">
           El campo es nuestra vida desde hace <span class="text-brand-orange">casi medio siglo</span>
         </h2>
         <p class="text-[#6B5644] text-lg leading-relaxed mb-8 max-w-xl">
