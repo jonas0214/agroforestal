@@ -114,8 +114,33 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.activeTab.set(i);
   }
 
-  activeProducts(): Product[] {
-    return this.categoryTabs()[this.activeTab()]?.products?.slice(0, 8) || [];
+  // Llena la vitrina: productos de la categoría activa; si faltan,
+  // completa con productos de otras categorías; si aún faltan, "Próximamente".
+  displayItems(): ({ type: 'product'; product: Product } | { type: 'soon' })[] {
+    const TARGET = 4; // mínimo para llenar la fila en desktop
+    const tabs = this.categoryTabs();
+    const active = tabs[this.activeTab()];
+    if (!active) return [];
+
+    const items: Product[] = [...active.products];
+    const seen = new Set(items.map(p => p.id));
+
+    if (items.length < TARGET) {
+      for (const tab of tabs) {
+        if (tab.cat.id === active.cat.id) continue;
+        for (const p of tab.products) {
+          if (items.length >= TARGET) break;
+          if (!seen.has(p.id)) { items.push(p); seen.add(p.id); }
+        }
+        if (items.length >= TARGET) break;
+      }
+    }
+
+    const result: ({ type: 'product'; product: Product } | { type: 'soon' })[] =
+      items.slice(0, 8).map(product => ({ type: 'product' as const, product }));
+
+    while (result.length < TARGET) result.push({ type: 'soon' as const });
+    return result;
   }
 
   addToCart(product: Product, ev: Event) {
