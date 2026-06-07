@@ -18,6 +18,16 @@
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+/* Mascota: rebote sutil + saludo del globo */
+@keyframes mascot-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes bubble-in {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
 .marquee-track {
   display: flex;
   width: max-content;

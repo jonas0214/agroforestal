@@ -23,6 +23,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   categoryTabs     = signal<{ cat: Category; count: number; products: Product[] }[]>([]);
   activeTab        = signal(0);
   activeSection    = signal(0);
+  showChatBubble   = signal(false);
   swiperInstance: any = null;
   swiperReady      = false;
   private observer: IntersectionObserver | null = null;
@@ -103,7 +104,18 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => this.initSwiper(), 150);
       this.initSectionObserver();
+      // La mascota "saluda" desde el botón de WhatsApp tras unos segundos
+      setTimeout(() => this.showChatBubble.set(true), 4000);
     }
+  }
+
+  dismissChat() {
+    this.showChatBubble.set(false);
+  }
+
+  whatsappLink(): string {
+    const num = this.settingsService.settings().whatsapp || '573000000000';
+    return 'https://wa.me/' + num.replace(/[^0-9]/g, '');
   }
 
   scrollToSection(id: string) {
