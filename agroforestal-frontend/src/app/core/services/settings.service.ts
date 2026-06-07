@@ -8,6 +8,8 @@ export interface SiteSettings {
   favicon_url?: string;
   hero_images?: string;
   feed_images?: string;
+  story_image?: string;
+  mascot_image?: string;
   site_name?: string;
   site_tagline?: string;
   whatsapp?: string;
@@ -46,6 +48,14 @@ export class SettingsService {
     return this.settings().logo_url || '';
   }
 
+  storyImageUrl(): string {
+    return this.settings().story_image || '';
+  }
+
+  mascotImageUrl(): string {
+    return this.settings().mascot_image || '';
+  }
+
   updateSettings(data: Partial<SiteSettings>) {
     return this.http.patch<SiteSettings>(`${this.api}/admin/settings`, data).pipe(
       tap(s => this.settings.set(s))
@@ -64,6 +74,22 @@ export class SettingsService {
     const fd = new FormData();
     fd.append('file', file);
     return this.http.post<{ url: string }>(`${this.api}/admin/media/favicon`, fd);
+  }
+
+  uploadStoryImage(file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<{ url: string }>(`${this.api}/admin/media/story`, fd).pipe(
+      tap(r => this.settings.update(s => ({ ...s, story_image: r.url })))
+    );
+  }
+
+  uploadMascotImage(file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<{ url: string }>(`${this.api}/admin/media/mascot`, fd).pipe(
+      tap(r => this.settings.update(s => ({ ...s, mascot_image: r.url })))
+    );
   }
 
   uploadHeroImage(file: File) {

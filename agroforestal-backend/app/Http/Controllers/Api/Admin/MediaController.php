@@ -26,6 +26,22 @@ class MediaController extends Controller
         return response()->json(['url' => $url]);
     }
 
+    public function uploadStoryImage(Request $request)
+    {
+        $request->validate(['file' => 'required|image|max:5120']);
+        $url = $this->storePublic($request->file('file'), 'branding');
+        Setting::set('story_image', $url);
+        return response()->json(['url' => $url]);
+    }
+
+    public function uploadMascotImage(Request $request)
+    {
+        $request->validate(['file' => 'required|image|max:5120']);
+        $url = $this->storePublic($request->file('file'), 'branding');
+        Setting::set('mascot_image', $url);
+        return response()->json(['url' => $url]);
+    }
+
     public function uploadHeroImage(Request $request)
     {
         $request->validate(['file' => 'required|image|max:5120']);

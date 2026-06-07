@@ -15,6 +15,8 @@ export class SettingsComponent implements OnInit {
 
   logoPreview    = signal<string | null>(null);
   faviconPreview = signal<string | null>(null);
+  storyPreview   = signal<string | null>(null);
+  mascotPreview  = signal<string | null>(null);
   uploading      = signal<Record<string, boolean>>({});
   saved          = signal(false);
   dragOver       = signal(false);
@@ -40,6 +42,30 @@ export class SettingsComponent implements OnInit {
       instagram:    s['instagram']    || 'agroforestalcolombia',
     });
     this.logoPreview.set(this.settings.logoUrl() || null);
+    this.storyPreview.set(this.settings.storyImageUrl() || null);
+    this.mascotPreview.set(this.settings.mascotImageUrl() || null);
+  }
+
+  onStorySelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.previewFile(file, this.storyPreview);
+    this.uploading.update(u => ({ ...u, story: true }));
+    this.settings.uploadStoryImage(file).subscribe({
+      next: () => this.uploading.update(u => ({ ...u, story: false })),
+      error: () => this.uploading.update(u => ({ ...u, story: false })),
+    });
+  }
+
+  onMascotSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.previewFile(file, this.mascotPreview);
+    this.uploading.update(u => ({ ...u, mascot: true }));
+    this.settings.uploadMascotImage(file).subscribe({
+      next: () => this.uploading.update(u => ({ ...u, mascot: false })),
+      error: () => this.uploading.update(u => ({ ...u, mascot: false })),
+    });
   }
 
   onLogoSelected(event: Event) {

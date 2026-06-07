@@ -15,7 +15,7 @@ class SettingsController extends Controller
 
     public function update(Request $request)
     {
-        $allowed = ['site_name', 'site_tagline', 'hero_images', 'feed_images', 'whatsapp', 'phone', 'address', 'instagram'];
+        $allowed = ['site_name', 'site_tagline', 'hero_images', 'feed_images', 'story_image', 'mascot_image', 'whatsapp', 'phone', 'address', 'instagram'];
 
         foreach ($request->only($allowed) as $key => $value) {
             Setting::set($key, is_array($value) ? json_encode($value) : $value);

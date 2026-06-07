@@ -189,9 +189,13 @@
           <!-- Tarjeta Próximamente -->
           <div class="rounded-3xl border-2 border-dashed border-[#E8DDD0] bg-[#FAF7F0]/50 flex flex-col items-center justify-center text-center p-6 min-h-[300px]"
                data-aos="fade-up" [attr.data-aos-delay]="(i % 4) * 60">
-            <div class="w-14 h-14 rounded-2xl bg-[#F0E8D5] flex items-center justify-center mb-4">
-              <svg class="w-7 h-7 text-[#C8A882]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-            </div>
+            @if (settingsService.mascotImageUrl()) {
+              <img [src]="settingsService.mascotImageUrl()" alt="" class="h-24 object-contain mb-3 drop-shadow-lg select-none pointer-events-none">
+            } @else {
+              <div class="w-14 h-14 rounded-2xl bg-[#F0E8D5] flex items-center justify-center mb-4">
+                <svg class="w-7 h-7 text-[#C8A882]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+              </div>
+            }
             <p class="font-serif text-lg text-[#3B2A1A] leading-tight mb-1">Próximamente</p>
             <p class="text-[#A08060] text-xs leading-snug">Nuevos equipos llegando a nuestra tienda</p>
           </div>
@@ -357,6 +361,73 @@
       }
     </div>
 
+  </div>
+</section>
+}
+
+<!-- ═══════════════════════════════════════ -->
+<!--  HISTORIA / IDENTIDAD — Desde 1977     -->
+<!-- ═══════════════════════════════════════ -->
+@if (settingsService.storyImageUrl()) {
+<section id="sec-historia" class="py-32 lg:py-40 bg-[#FAF7F0] overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
+
+      <!-- Imagen real -->
+      <div class="relative max-w-md mx-auto lg:mx-0 w-full" data-aos="fade-right">
+        <div class="relative rounded-[2rem] overflow-hidden aspect-[4/5] shadow-2xl shadow-[#3B2A1A]/20">
+          <img [src]="settingsService.storyImageUrl()" alt="Agroforestal de Colombia"
+               class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#1F1209]/40 via-transparent to-transparent"></div>
+        </div>
+        <!-- Badge años flotante -->
+        <div class="absolute -bottom-5 right-4 sm:-right-5 bg-brand-orange text-white rounded-2xl px-6 py-4 shadow-xl shadow-brand-orange/30">
+          <p class="font-serif text-4xl leading-none">47+</p>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-white/85 mt-1">Años de oficio</p>
+        </div>
+        <!-- Mascota asomándose -->
+        @if (settingsService.mascotImageUrl()) {
+          <img [src]="settingsService.mascotImageUrl()" alt=""
+               class="hidden lg:block absolute -bottom-10 -left-12 w-28 drop-shadow-2xl pointer-events-none select-none">
+        }
+      </div>
+
+      <!-- Copy -->
+      <div data-aos="fade-left">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="h-px w-10 bg-brand-orange"></div>
+          <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Nuestra historia · Desde 1977</span>
+        </div>
+        <h2 class="font-serif text-4xl md:text-5xl text-[#3B2A1A] leading-[1.1] mb-6">
+          El campo es nuestra vida desde hace <span class="text-brand-orange">casi medio siglo</span>
+        </h2>
+        <p class="text-[#6B5644] text-lg leading-relaxed mb-8 max-w-xl">
+          Empezamos como una pequeña distribuidora en Cali y hoy somos el supermercado del campo del suroccidente colombiano. Detrás de cada equipo y cada repuesto hay manos que conocen la tierra, las máquinas y al agricultor.
+        </p>
+
+        <div class="space-y-4 mb-10">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-brand-orange shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <p class="text-[#3B2A1A]"><strong class="font-bold">Asesoría de quien sí sabe del campo</strong>, no de un catálogo.</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-brand-orange shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <p class="text-[#3B2A1A]"><strong class="font-bold">Repuestos originales</strong> y garantía real de fábrica.</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-brand-orange shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <p class="text-[#3B2A1A]"><strong class="font-bold">Servicio técnico</strong> que de verdad responde.</p>
+          </div>
+        </div>
+
+        <a routerLink="/cotizacion"
+           class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange-700 text-white font-bold px-8 py-4 text-sm uppercase tracking-widest rounded-full shadow-lg shadow-brand-orange/25 hover:shadow-xl hover:shadow-brand-orange/30 hover:-translate-y-0.5 transition-all duration-300">
+          Habla con un asesor
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+
+    </div>
   </div>
 </section>
 }

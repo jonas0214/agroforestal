@@ -60,6 +60,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/admin/settings',              [SettingsController::class, 'update']);
         Route::post('/admin/media/logo',             [MediaController::class, 'uploadLogo']);
         Route::post('/admin/media/favicon',          [MediaController::class, 'uploadFavicon']);
+        Route::post('/admin/media/story',            [MediaController::class, 'uploadStoryImage']);
+        Route::post('/admin/media/mascot',           [MediaController::class, 'uploadMascotImage']);
         Route::post('/admin/media/hero',             [MediaController::class, 'uploadHeroImage']);
         Route::delete('/admin/media/hero',           [MediaController::class, 'deleteHeroImage']);
         Route::post('/admin/media/feed',             [MediaController::class, 'uploadFeedImage']);
