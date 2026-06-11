@@ -27,6 +27,7 @@ export class ProductsComponent implements OnInit {
   productImages  = signal<ProductImage[]>([]);
   uploadingImage = signal(false);
   savedProduct   = signal<Product | null>(null);
+  error          = signal<string | null>(null);
 
   form = this.fb.group({
     name:        ['', Validators.required],
@@ -54,6 +55,7 @@ export class ProductsComponent implements OnInit {
   openCreate() {
     this.editingId.set(null);
     this.savedProduct.set(null);
+    this.error.set(null);
     this.productImages.set([]);
     this.form.reset({ is_active: true, is_featured: false, status: 'available' });
     this.showForm.set(true);
@@ -62,24 +64,38 @@ export class ProductsComponent implements OnInit {
   openEdit(p: Product) {
     this.editingId.set(p.id);
     this.savedProduct.set(p);
+    this.error.set(null);
     this.productImages.set(p.images || []);
     this.form.patchValue(p as any);
     this.showForm.set(true);
   }
 
   save() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.error.set('Completa el nombre del producto (campo obligatorio).');
+      return;
+    }
     this.loading.set(true);
+    this.error.set(null);
     const data = this.form.value as any;
     const req = this.editingId()
       ? this.productService.updateProduct(this.editingId()!, data)
       : this.productService.createProduct(data);
 
-    req.subscribe(product => {
-      this.loading.set(false);
-      this.editingId.set(product.id);
-      this.savedProduct.set(product);
-      this.loadAll();
+    req.subscribe({
+      next: product => {
+        this.loading.set(false);
+        this.editingId.set(product.id);
+        this.savedProduct.set(product);
+        this.loadAll();
+      },
+      error: err => {
+        this.loading.set(false);
+        const msg = err?.error?.message
+          || (err?.error?.errors ? Object.values(err.error.errors).flat().join(' ') : null)
+          || 'No se pudo guardar el producto. Revisa los datos e inténtalo de nuevo.';
+        this.error.set(msg);
+      },
     });
   }
 

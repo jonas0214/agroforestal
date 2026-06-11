@@ -49,6 +49,10 @@ import { SettingsService } from '../../../core/services/settings.service';
              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors text-sm font-medium">
             <span class="text-base">🏷️</span> Categorías
           </a>
+          <a routerLink="/admin/marcas" routerLinkActive="!bg-brand-orange !text-white"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors text-sm font-medium">
+            <span class="text-base">®️</span> Marcas
+          </a>
 
           <div class="pt-4 pb-1">
             <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest px-3 mb-2">Solicitudes</p>

@@ -34,6 +34,7 @@ export const routes: Routes = [
       { path: 'solicitudes', loadComponent: () => import('./features/admin/service-requests/service-requests.component').then(m => m.ServiceRequestsComponent) },
       { path: 'cotizaciones', loadComponent: () => import('./features/admin/quotes/quotes.component').then(m => m.QuotesComponent) },
       { path: 'categorias',    loadComponent: () => import('./features/admin/categories/categories.component').then(m => m.CategoriesComponent) },
+      { path: 'marcas',        loadComponent: () => import('./features/admin/brands/brands.component').then(m => m.BrandsComponent) },
       { path: 'configuracion', loadComponent: () => import('./features/admin/settings/settings.component').then(m => m.SettingsComponent) },
     ],
   },

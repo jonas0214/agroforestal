@@ -13,6 +13,7 @@ export interface Brand {
   name: string;
   slug: string;
   logo?: string;
+  website?: string;
 }
 
 export interface ProductImage {
