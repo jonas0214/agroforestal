@@ -25,6 +25,7 @@ export class ProductsComponent implements OnInit {
   editingId      = signal<number | null>(null);
   loading        = signal(false);
   productImages  = signal<ProductImage[]>([]);
+  coverImage     = signal<string | null>(null);
   uploadingImage = signal(false);
   savedMsg       = signal<string | null>(null);
   error          = signal<string | null>(null);
@@ -57,6 +58,7 @@ export class ProductsComponent implements OnInit {
     this.savedMsg.set(null);
     this.error.set(null);
     this.productImages.set([]);
+    this.coverImage.set(null);
     this.form.reset({ is_active: true, is_featured: false, status: 'available' });
     this.showForm.set(true);
   }
@@ -66,6 +68,7 @@ export class ProductsComponent implements OnInit {
     this.savedMsg.set(null);
     this.error.set(null);
     this.productImages.set(p.images || []);
+    this.coverImage.set(p.cover_image ?? null);
     this.form.reset({ is_active: true, is_featured: false, status: 'available' });
     this.form.patchValue({
       name:        p.name,
@@ -130,15 +133,27 @@ export class ProductsComponent implements OnInit {
     this.http.post<ProductImage>(`${this.api}/admin/media/product-image`, fd).subscribe({
       next: img => {
         this.productImages.update(imgs => [...imgs, img]);
+        // La primera foto se vuelve portada automáticamente en el backend
+        if (!this.coverImage()) this.coverImage.set(img.path);
         this.uploadingImage.set(false);
+        this.loadAll();
       },
       error: () => this.uploadingImage.set(false),
     });
   }
 
   removeImage(id: number) {
-    this.http.delete(`${this.api}/admin/media/product-image/${id}`).subscribe(() => {
+    this.http.delete<{ cover_image: string | null }>(`${this.api}/admin/media/product-image/${id}`).subscribe(res => {
       this.productImages.update(imgs => imgs.filter(i => i.id !== id));
+      this.coverImage.set(res?.cover_image ?? null);
+      this.loadAll();
+    });
+  }
+
+  setCover(img: ProductImage) {
+    this.http.patch<{ cover_image: string }>(`${this.api}/admin/media/product-image/${img.id}/cover`, {}).subscribe(res => {
+      this.coverImage.set(res.cover_image);
+      this.loadAll();
     });
   }
 

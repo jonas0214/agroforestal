@@ -124,11 +124,30 @@ class MediaController extends Controller
 
     public function deleteProductImage(int $id)
     {
-        $image = \App\Models\ProductImage::findOrFail($id);
+        $image    = \App\Models\ProductImage::findOrFail($id);
+        $product  = \App\Models\Product::find($image->product_id);
+        $wasCover = $product && $product->cover_image === $image->path;
+
         $relative = str_replace(url('/storage') . '/', '', $image->path);
         Storage::disk('public')->delete($relative);
         $image->delete();
-        return response()->json(['message' => 'deleted']);
+
+        // Si borramos la portada, reasignamos a otra imagen restante (o null)
+        if ($wasCover) {
+            $next = \App\Models\ProductImage::where('product_id', $product->id)->orderBy('order')->first();
+            $product->update(['cover_image' => $next?->path]);
+        }
+
+        return response()->json(['message' => 'deleted', 'cover_image' => $product?->fresh()->cover_image]);
+    }
+
+    public function setProductCover(int $id)
+    {
+        $image   = \App\Models\ProductImage::findOrFail($id);
+        $product = \App\Models\Product::findOrFail($image->product_id);
+        $product->update(['cover_image' => $image->path]);
+
+        return response()->json(['cover_image' => $image->path]);
     }
 
     private function storePublic($file, string $folder): string

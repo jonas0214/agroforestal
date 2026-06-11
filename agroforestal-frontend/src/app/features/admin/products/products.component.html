@@ -108,14 +108,20 @@
             @if (productImages().length > 0) {
               <div class="grid grid-cols-3 gap-3 mb-5">
                 @for (img of productImages(); track img.id) {
-                  <div class="relative group">
+                  <div class="relative group"
+                       [class.ring-2]="img.path === coverImage()" [class.ring-brand-orange]="img.path === coverImage()">
                     <img [src]="img.path" alt="" class="w-full h-28 object-cover rounded-lg border border-gray-100">
-                    <button (click)="removeImage(img.id)"
+                    <button type="button" (click)="removeImage(img.id)"
                       class="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       ×
                     </button>
-                    @if ($index === 0) {
+                    @if (img.path === coverImage()) {
                       <span class="absolute bottom-1.5 left-1.5 bg-brand-orange text-white text-[9px] px-2 py-0.5 rounded font-bold">PRINCIPAL</span>
+                    } @else {
+                      <button type="button" (click)="setCover(img)"
+                        class="absolute bottom-1.5 left-1.5 bg-black/70 text-white text-[9px] px-2 py-0.5 rounded font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                        Hacer principal
+                      </button>
                     }
                   </div>
                 }
