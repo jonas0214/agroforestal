@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\GeneratesUniqueSlug;
 use App\Models\Brand;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class BrandController extends Controller
 {
+    use GeneratesUniqueSlug;
+
     public function index()
     {
         return response()->json(Brand::where('is_active', true)->get());
@@ -25,7 +27,7 @@ class BrandController extends Controller
             'name'    => 'required|string|max:255',
             'website' => 'nullable|url',
         ]);
-        $data['slug'] = Str::slug($data['name']);
+        $data['slug'] = $this->uniqueSlug(Brand::class, $data['name']);
         return response()->json(Brand::create($data), 201);
     }
 
@@ -36,7 +38,7 @@ class BrandController extends Controller
             'website'   => 'nullable|url',
             'is_active' => 'boolean',
         ]);
-        if (isset($data['name'])) $data['slug'] = Str::slug($data['name']);
+        if (isset($data['name'])) $data['slug'] = $this->uniqueSlug(Brand::class, $data['name'], $brand->id);
         $brand->update($data);
         return response()->json($brand);
     }

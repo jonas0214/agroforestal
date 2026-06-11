@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\GeneratesUniqueSlug;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
+    use GeneratesUniqueSlug;
+
     public function index()
     {
         return response()->json(Category::where('is_active', true)->with('children')->whereNull('parent_id')->get());
@@ -26,7 +28,7 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
         ]);
-        $data['slug'] = Str::slug($data['name']);
+        $data['slug'] = $this->uniqueSlug(Category::class, $data['name']);
         return response()->json(Category::create($data), 201);
     }
 
@@ -37,7 +39,7 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
             'is_active' => 'boolean',
         ]);
-        if (isset($data['name'])) $data['slug'] = Str::slug($data['name']);
+        if (isset($data['name'])) $data['slug'] = $this->uniqueSlug(Category::class, $data['name'], $category->id);
         $category->update($data);
         return response()->json($category);
     }

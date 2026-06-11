@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\GeneratesUniqueSlug;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
+    use GeneratesUniqueSlug;
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'brand', 'images'])
@@ -51,7 +53,7 @@ class ProductController extends Controller
             'status'      => 'in:available,out_of_stock,discontinued',
         ]);
 
-        $data['slug'] = Str::slug($data['name']);
+        $data['slug'] = $this->uniqueSlug(Product::class, $data['name']);
 
         $product = Product::create($data);
 
@@ -74,7 +76,7 @@ class ProductController extends Controller
         ]);
 
         if (isset($data['name'])) {
-            $data['slug'] = Str::slug($data['name']);
+            $data['slug'] = $this->uniqueSlug(Product::class, $data['name'], $product->id);
         }
 
         $product->update($data);
