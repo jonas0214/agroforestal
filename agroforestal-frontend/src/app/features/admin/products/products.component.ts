@@ -103,7 +103,7 @@ export class ProductsComponent implements OnInit {
         this.editingId.set(product.id);
         // Refrescamos el SKU autogenerado y demás campos devueltos por el servidor
         this.form.patchValue({ sku: product.sku ?? '' });
-        this.savedMsg.set(this.editingId() ? 'Producto guardado. Puedes agregar fotos abajo.' : 'Producto creado.');
+        this.savedMsg.set('✓ Cambios guardados correctamente.');
         this.loadAll();
       },
       error: err => {
@@ -155,6 +155,16 @@ export class ProductsComponent implements OnInit {
       this.coverImage.set(res.cover_image);
       this.loadAll();
     });
+  }
+
+  moveImage(index: number, dir: -1 | 1) {
+    const imgs = [...this.productImages()];
+    const j = index + dir;
+    if (j < 0 || j >= imgs.length) return;
+    [imgs[index], imgs[j]] = [imgs[j], imgs[index]];
+    this.productImages.set(imgs);
+    this.http.post(`${this.api}/admin/media/product-images/reorder`, { order: imgs.map(i => i.id) })
+      .subscribe(() => this.loadAll());
   }
 
   closeForm() {

@@ -150,6 +150,20 @@ class MediaController extends Controller
         return response()->json(['cover_image' => $image->path]);
     }
 
+    public function reorderProductImages(Request $request)
+    {
+        $data = $request->validate([
+            'order'   => 'required|array',
+            'order.*' => 'integer|exists:product_images,id',
+        ]);
+
+        foreach ($data['order'] as $position => $imageId) {
+            \App\Models\ProductImage::where('id', $imageId)->update(['order' => $position]);
+        }
+
+        return response()->json(['message' => 'reordered']);
+    }
+
     private function storePublic($file, string $folder): string
     {
         $name = Str::uuid() . '.' . $file->getClientOriginalExtension();

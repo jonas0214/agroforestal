@@ -106,15 +106,27 @@
 
             <!-- Grid de imágenes subidas -->
             @if (productImages().length > 0) {
+              <p class="text-xs text-gray-400 mb-2">Usa ◀ ▶ para cambiar el orden. La foto con borde naranja es la principal (la que se ve en el catálogo).</p>
               <div class="grid grid-cols-3 gap-3 mb-5">
-                @for (img of productImages(); track img.id) {
+                @for (img of productImages(); track img.id; let i = $index) {
                   <div class="relative group"
                        [class.ring-2]="img.path === coverImage()" [class.ring-brand-orange]="img.path === coverImage()">
                     <img [src]="img.path" alt="" class="w-full h-28 object-cover rounded-lg border border-gray-100">
+
+                    <!-- Eliminar -->
                     <button type="button" (click)="removeImage(img.id)"
                       class="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       ×
                     </button>
+
+                    <!-- Reordenar -->
+                    <div class="absolute top-1.5 left-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button type="button" (click)="moveImage(i, -1)" [disabled]="i === 0"
+                        class="w-6 h-6 bg-black/70 text-white rounded text-xs flex items-center justify-center disabled:opacity-30">◀</button>
+                      <button type="button" (click)="moveImage(i, 1)" [disabled]="i === productImages().length - 1"
+                        class="w-6 h-6 bg-black/70 text-white rounded text-xs flex items-center justify-center disabled:opacity-30">▶</button>
+                    </div>
+
                     @if (img.path === coverImage()) {
                       <span class="absolute bottom-1.5 left-1.5 bg-brand-orange text-white text-[9px] px-2 py-0.5 rounded font-bold">PRINCIPAL</span>
                     } @else {
