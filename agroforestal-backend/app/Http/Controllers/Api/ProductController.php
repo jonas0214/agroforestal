@@ -57,6 +57,11 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
+        // SKU automático para auditorías si no se proporcionó uno (ej: AGRO-00001)
+        if (empty($product->sku)) {
+            $product->update(['sku' => 'AGRO-' . str_pad((string) $product->id, 5, '0', STR_PAD_LEFT)]);
+        }
+
         return response()->json($product->load(['category', 'brand']), 201);
     }
 

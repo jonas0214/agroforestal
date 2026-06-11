@@ -26,7 +26,7 @@ export class ProductsComponent implements OnInit {
   loading        = signal(false);
   productImages  = signal<ProductImage[]>([]);
   uploadingImage = signal(false);
-  savedProduct   = signal<Product | null>(null);
+  savedMsg       = signal<string | null>(null);
   error          = signal<string | null>(null);
 
   form = this.fb.group({
@@ -54,7 +54,7 @@ export class ProductsComponent implements OnInit {
 
   openCreate() {
     this.editingId.set(null);
-    this.savedProduct.set(null);
+    this.savedMsg.set(null);
     this.error.set(null);
     this.productImages.set([]);
     this.form.reset({ is_active: true, is_featured: false, status: 'available' });
@@ -63,10 +63,22 @@ export class ProductsComponent implements OnInit {
 
   openEdit(p: Product) {
     this.editingId.set(p.id);
-    this.savedProduct.set(p);
+    this.savedMsg.set(null);
     this.error.set(null);
     this.productImages.set(p.images || []);
-    this.form.patchValue(p as any);
+    this.form.reset({ is_active: true, is_featured: false, status: 'available' });
+    this.form.patchValue({
+      name:        p.name,
+      description: p.description ?? '',
+      price:       p.price ?? null,
+      sale_price:  p.sale_price ?? null,
+      sku:         p.sku ?? '',
+      category_id: p.category?.id ?? (p as any).category_id ?? null,
+      brand_id:    p.brand?.id ?? (p as any).brand_id ?? null,
+      is_featured: p.is_featured,
+      is_active:   p.is_active,
+      status:      p.status,
+    });
     this.showForm.set(true);
   }
 
@@ -86,7 +98,9 @@ export class ProductsComponent implements OnInit {
       next: product => {
         this.loading.set(false);
         this.editingId.set(product.id);
-        this.savedProduct.set(product);
+        // Refrescamos el SKU autogenerado y demás campos devueltos por el servidor
+        this.form.patchValue({ sku: product.sku ?? '' });
+        this.savedMsg.set(this.editingId() ? 'Producto guardado. Puedes agregar fotos abajo.' : 'Producto creado.');
         this.loadAll();
       },
       error: err => {
@@ -130,7 +144,7 @@ export class ProductsComponent implements OnInit {
 
   closeForm() {
     this.showForm.set(false);
-    this.savedProduct.set(null);
+    this.savedMsg.set(null);
     this.loadAll();
   }
 

@@ -11,89 +11,82 @@
 
         <h2 class="text-xl font-bold mb-6">{{ editingId() ? 'Editar' : 'Nuevo' }} producto</h2>
 
-        <!-- PASO 1: Datos del producto -->
-        @if (!savedProduct()) {
-          <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-                <input formControlName="name" type="text" class="input">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-                <input formControlName="price" type="number" min="0" class="input">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Precio oferta</label>
-                <input formControlName="sale_price" type="number" min="0" class="input">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                <select formControlName="category_id" class="input">
-                  <option [ngValue]="null">Sin categoría</option>
-                  @for (cat of categories(); track cat.id) {
-                    <option [ngValue]="cat.id">{{ cat.name }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
-                <select formControlName="brand_id" class="input">
-                  <option [ngValue]="null">Sin marca</option>
-                  @for (brand of brands(); track brand.id) {
-                    <option [ngValue]="brand.id">{{ brand.name }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">SKU / Referencia</label>
-                <input formControlName="sku" type="text" class="input">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                <select formControlName="status" class="input">
-                  <option value="available">Disponible</option>
-                  <option value="out_of_stock">Agotado</option>
-                  <option value="discontinued">Descontinuado</option>
-                </select>
-              </div>
-              <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                <textarea formControlName="description" rows="3" class="input resize-none"></textarea>
-              </div>
-              <div class="flex items-center gap-4">
-                <label class="flex items-center gap-2 text-sm cursor-pointer">
-                  <input formControlName="is_featured" type="checkbox" class="rounded"> Destacado
-                </label>
-                <label class="flex items-center gap-2 text-sm cursor-pointer">
-                  <input formControlName="is_active" type="checkbox" class="rounded"> Activo
-                </label>
-              </div>
+        <!-- Datos del producto (siempre visible, precargado al editar) -->
+        <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+              <input formControlName="name" type="text" class="input">
             </div>
-            @if (error()) {
-              <p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ error() }}</p>
-            }
-            <div class="flex gap-3 pt-2">
-              <button type="submit" [disabled]="loading()" class="btn-primary flex-1 justify-center">
-                {{ loading() ? 'Guardando...' : 'Guardar y subir fotos →' }}
-              </button>
-              <button type="button" (click)="closeForm()" class="btn-outline flex-1 text-center">Cancelar</button>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+              <input formControlName="price" type="number" min="0" class="input">
             </div>
-          </form>
-        }
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio oferta</label>
+              <input formControlName="sale_price" type="number" min="0" class="input">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+              <select formControlName="category_id" class="input">
+                <option [ngValue]="null">Sin categoría</option>
+                @for (cat of categories(); track cat.id) {
+                  <option [ngValue]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+              <select formControlName="brand_id" class="input">
+                <option [ngValue]="null">Sin marca</option>
+                @for (brand of brands(); track brand.id) {
+                  <option [ngValue]="brand.id">{{ brand.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">SKU / Referencia <span class="text-gray-400 font-normal">(automático)</span></label>
+              <input formControlName="sku" type="text" class="input bg-gray-50 text-gray-500" readonly placeholder="Se genera automáticamente">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select formControlName="status" class="input">
+                <option value="available">Disponible</option>
+                <option value="out_of_stock">Agotado</option>
+                <option value="discontinued">Descontinuado</option>
+              </select>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea formControlName="description" rows="3" class="input resize-none"></textarea>
+            </div>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input formControlName="is_featured" type="checkbox" class="rounded"> Destacado
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input formControlName="is_active" type="checkbox" class="rounded"> Activo
+              </label>
+            </div>
+          </div>
+          @if (error()) {
+            <p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ error() }}</p>
+          }
+          @if (savedMsg()) {
+            <p class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{{ savedMsg() }}</p>
+          }
+          <div class="flex gap-3 pt-2">
+            <button type="submit" [disabled]="loading()" class="btn-primary flex-1 justify-center">
+              {{ loading() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Guardar producto') }}
+            </button>
+            <button type="button" (click)="closeForm()" class="btn-outline flex-1 text-center">Cerrar</button>
+          </div>
+        </form>
 
-        <!-- PASO 2: Fotos (después de guardar) -->
-        @if (savedProduct()) {
-          <div>
-            <!-- Resumen del producto guardado -->
-            <div class="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-6">
-              <svg class="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <div>
-                <p class="font-semibold text-green-800 text-sm">{{ savedProduct()!.name }} guardado</p>
-                <p class="text-xs text-green-600">Ahora puedes agregar fotos al producto</p>
-              </div>
-              <button (click)="form.reset(); savedProduct.set(null)" class="ml-auto text-xs text-green-700 underline">Editar datos</button>
-            </div>
+        <!-- Fotos del producto (disponible una vez guardado) -->
+        @if (editingId()) {
+          <div class="mt-6 pt-6 border-t border-gray-100">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Fotos del producto</h3>
 
             <!-- Upload zone -->
             <label class="block cursor-pointer group mb-5">
@@ -132,7 +125,7 @@
             }
 
             <button (click)="closeForm()" class="btn-primary w-full justify-center">
-              Finalizar
+              Listo
             </button>
           </div>
         }
