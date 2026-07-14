@@ -192,6 +192,7 @@
     <table class="w-full text-sm">
       <thead class="bg-gray-50 border-b border-gray-100">
         <tr>
+          <th class="text-left pl-6 pr-2 py-3 text-gray-500 font-semibold w-12">#</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Producto</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold hidden md:table-cell">Marca</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold hidden md:table-cell">Precio</th>
@@ -200,8 +201,9 @@
         </tr>
       </thead>
       <tbody>
-        @for (product of filteredProducts(); track product.id) {
+        @for (product of filteredProducts(); track product.id; let i = $index) {
           <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+            <td class="pl-6 pr-2 py-4 text-gray-400 tabular-nums">{{ i + 1 }}</td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
                 @if (product.cover_image) {
@@ -236,7 +238,7 @@
           </tr>
         }
         @if (filteredProducts().length === 0) {
-          <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">
+          <tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">
             {{ products().length === 0 ? 'No hay productos aún' : 'Ningún producto coincide con la búsqueda' }}
           </td></tr>
         }
