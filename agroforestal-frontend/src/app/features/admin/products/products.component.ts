@@ -1,6 +1,6 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../../core/services/product.service';
 import { Product, Category, Brand, ProductImage } from '../../../core/models/product.model';
@@ -9,7 +9,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './products.component.html',
 })
 export class ProductsComponent implements OnInit {
@@ -29,6 +29,34 @@ export class ProductsComponent implements OnInit {
   uploadingImage = signal(false);
   savedMsg       = signal<string | null>(null);
   error          = signal<string | null>(null);
+
+  // Filtros de búsqueda de la tabla
+  searchTerm     = signal('');
+  filterCategory = signal<number | null>(null);
+  filterBrand    = signal<number | null>(null);
+  filterStatus   = signal<string>('');
+
+  filteredProducts = computed(() => {
+    const term   = this.searchTerm().trim().toLowerCase();
+    const cat    = this.filterCategory();
+    const brand  = this.filterBrand();
+    const status = this.filterStatus();
+    return this.products().filter(p => {
+      if (term && !(p.name.toLowerCase().includes(term) || (p.sku ?? '').toLowerCase().includes(term))) return false;
+      if (cat    && (p.category?.id ?? (p as any).category_id) !== cat) return false;
+      if (brand  && (p.brand?.id ?? (p as any).brand_id) !== brand) return false;
+      if (status === 'inactive' && p.is_active) return false;
+      if (status && status !== 'inactive' && p.status !== status) return false;
+      return true;
+    });
+  });
+
+  clearFilters() {
+    this.searchTerm.set('');
+    this.filterCategory.set(null);
+    this.filterBrand.set(null);
+    this.filterStatus.set('');
+  }
 
   form = this.fb.group({
     name:        ['', Validators.required],
@@ -50,7 +78,8 @@ export class ProductsComponent implements OnInit {
   }
 
   loadAll() {
-    this.productService.getProducts({ page: 1 }).subscribe(res => this.products.set(res.data));
+    this.productService.getProducts({ page: 1, perPage: 200, includeInactive: true })
+      .subscribe(res => this.products.set(res.data));
   }
 
   openCreate() {

@@ -1,13 +1,13 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { PostService } from '../../../core/services/post.service';
 import { Post } from '../../../core/models/post.model';
 
 @Component({
   selector: 'app-admin-posts',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <div class="p-8">
       <div class="flex items-center justify-between mb-6">
@@ -48,6 +48,12 @@ import { Post } from '../../../core/models/post.model';
         </div>
       }
 
+      <div class="relative mb-4">
+        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+        <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+               placeholder="Buscar entrada..." class="input !pl-9 w-full max-w-sm">
+      </div>
+
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 border-b border-gray-100">
@@ -59,7 +65,7 @@ import { Post } from '../../../core/models/post.model';
             </tr>
           </thead>
           <tbody>
-            @for (post of posts(); track post.id) {
+            @for (post of filteredPosts(); track post.id) {
               <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                 <td class="px-6 py-4 font-medium text-gray-900">{{ post.title }}</td>
                 <td class="px-6 py-4">
@@ -74,8 +80,10 @@ import { Post } from '../../../core/models/post.model';
                 </td>
               </tr>
             }
-            @if (posts().length === 0) {
-              <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400">No hay entradas aún</td></tr>
+            @if (filteredPosts().length === 0) {
+              <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                {{ posts().length === 0 ? 'No hay entradas aún' : 'Ninguna entrada coincide con la búsqueda' }}
+              </td></tr>
             }
           </tbody>
         </table>
@@ -88,6 +96,12 @@ export class PostsComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   posts = signal<Post[]>([]);
+  searchTerm = signal('');
+  filteredPosts = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    if (!term) return this.posts();
+    return this.posts().filter(p => p.title.toLowerCase().includes(term));
+  });
   showForm = signal(false);
   editingId = signal<number | null>(null);
   loading = signal(false);
@@ -101,7 +115,10 @@ export class PostsComponent implements OnInit {
 
   ngOnInit() { this.load(); }
 
-  load() { this.postService.getPosts(1).subscribe(res => this.posts.set(res.data)); }
+  load() {
+    this.postService.getPosts(1, { perPage: 200, includeDrafts: true })
+      .subscribe(res => this.posts.set(res.data));
+  }
 
   openCreate() { this.editingId.set(null); this.form.reset({ status: 'draft' }); this.showForm.set(true); }
 

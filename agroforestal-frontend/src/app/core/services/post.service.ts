@@ -9,8 +9,11 @@ export class PostService {
   private api = environment.apiUrl;
   constructor(private http: HttpClient) {}
 
-  getPosts(page = 1) {
-    return this.http.get<PaginatedResponse<Post>>(`${this.api}/posts?page=${page}`);
+  getPosts(page = 1, opts: { perPage?: number; includeDrafts?: boolean } = {}) {
+    let url = `${this.api}/posts?page=${page}`;
+    if (opts.perPage)       url += `&per_page=${opts.perPage}`;
+    if (opts.includeDrafts) url += `&include_drafts=1`;
+    return this.http.get<PaginatedResponse<Post>>(url);
   }
 
   getPost(id: number) {

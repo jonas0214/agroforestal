@@ -9,14 +9,21 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(
-            Post::with('author:id,name,avatar')
-                ->where('status', 'published')
-                ->orderByDesc('published_at')
-                ->paginate(9)
-        );
+        $query = Post::with('author:id,name,avatar');
+
+        // Solo el admin puede ver borradores (?include_drafts=1)
+        $isAdmin = $request->user('sanctum')?->role === 'admin';
+        if ($isAdmin && $request->boolean('include_drafts')) {
+            $query->orderByDesc('created_at');
+        } else {
+            $query->where('status', 'published')->orderByDesc('published_at');
+        }
+
+        $perPage = min((int) $request->input('per_page', 9), 200);
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function show(Post $post)

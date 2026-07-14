@@ -13,8 +13,13 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'brand', 'images'])
-            ->where('is_active', true);
+        $query = Product::with(['category', 'brand', 'images']);
+
+        // Solo el admin puede ver productos inactivos (?include_inactive=1)
+        $isAdmin = $request->user('sanctum')?->role === 'admin';
+        if (!($isAdmin && $request->boolean('include_inactive'))) {
+            $query->where('is_active', true);
+        }
 
         if ($request->has('category')) {
             $query->whereHas('category', fn($q) => $q->where('slug', $request->category));
@@ -23,13 +28,18 @@ class ProductController extends Controller
             $query->whereHas('brand', fn($q) => $q->where('slug', $request->brand));
         }
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(fn($q) => $q
+                ->where('name', 'like', '%' . $search . '%')
+                ->orWhere('sku', 'like', '%' . $search . '%'));
         }
         if ($request->has('featured')) {
             $query->where('is_featured', true);
         }
 
-        return response()->json($query->paginate(12));
+        $perPage = min((int) $request->input('per_page', 12), 200);
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function show(Product $product)

@@ -1,6 +1,6 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Category } from '../../../core/models/product.model';
@@ -8,7 +8,7 @@ import { Category } from '../../../core/models/product.model';
 @Component({
   selector: 'app-admin-categories',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
 <div class="p-8">
   <div class="flex items-center justify-between mb-6">
@@ -40,6 +40,12 @@ import { Category } from '../../../core/models/product.model';
     </div>
   }
 
+  <div class="relative mb-4">
+    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+    <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+           placeholder="Buscar categoría..." class="input !pl-9 w-full max-w-sm">
+  </div>
+
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <table class="w-full text-sm">
       <thead class="bg-gray-50 border-b border-gray-100">
@@ -50,7 +56,7 @@ import { Category } from '../../../core/models/product.model';
         </tr>
       </thead>
       <tbody>
-        @for (cat of categories(); track cat.id) {
+        @for (cat of filteredCategories(); track cat.id) {
           <tr class="border-b border-gray-50 hover:bg-gray-50">
             <td class="px-6 py-4 font-medium text-gray-900">{{ cat.name }}</td>
             <td class="px-6 py-4 text-gray-400 text-xs font-mono">{{ cat.slug }}</td>
@@ -60,8 +66,10 @@ import { Category } from '../../../core/models/product.model';
             </td>
           </tr>
         }
-        @if (categories().length === 0) {
-          <tr><td colspan="3" class="px-6 py-12 text-center text-gray-400">No hay categorías aún</td></tr>
+        @if (filteredCategories().length === 0) {
+          <tr><td colspan="3" class="px-6 py-12 text-center text-gray-400">
+            {{ categories().length === 0 ? 'No hay categorías aún' : 'Ninguna categoría coincide con la búsqueda' }}
+          </td></tr>
         }
       </tbody>
     </table>
@@ -75,6 +83,13 @@ export class CategoriesComponent implements OnInit {
   private api  = environment.apiUrl;
 
   categories = signal<Category[]>([]);
+  searchTerm = signal('');
+  filteredCategories = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    if (!term) return this.categories();
+    return this.categories().filter(c =>
+      c.name.toLowerCase().includes(term) || (c.slug ?? '').toLowerCase().includes(term));
+  });
   showForm   = signal(false);
   editingId  = signal<number | null>(null);
   loading    = signal(false);
