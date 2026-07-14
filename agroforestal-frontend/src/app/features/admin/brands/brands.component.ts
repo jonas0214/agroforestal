@@ -47,6 +47,7 @@ import { Brand } from '../../../core/models/product.model';
     <table class="w-full text-sm">
       <thead class="bg-gray-50 border-b border-gray-100">
         <tr>
+          <th class="text-left pl-6 pr-2 py-3 text-gray-500 font-semibold w-12">#</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Nombre</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold hidden md:table-cell">Sitio web</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Slug</th>
@@ -54,8 +55,9 @@ import { Brand } from '../../../core/models/product.model';
         </tr>
       </thead>
       <tbody>
-        @for (brand of brands(); track brand.id) {
+        @for (brand of brands(); track brand.id; let i = $index) {
           <tr class="border-b border-gray-50 hover:bg-gray-50">
+            <td class="pl-6 pr-2 py-4 text-gray-400 tabular-nums">{{ i + 1 }}</td>
             <td class="px-6 py-4 font-medium text-gray-900">{{ brand.name }}</td>
             <td class="px-6 py-4 text-gray-500 text-xs hidden md:table-cell">{{ brand.website || '—' }}</td>
             <td class="px-6 py-4 text-gray-400 text-xs font-mono">{{ brand.slug }}</td>
@@ -66,7 +68,7 @@ import { Brand } from '../../../core/models/product.model';
           </tr>
         }
         @if (brands().length === 0) {
-          <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400">No hay marcas aún</td></tr>
+          <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No hay marcas aún</td></tr>
         }
       </tbody>
     </table>

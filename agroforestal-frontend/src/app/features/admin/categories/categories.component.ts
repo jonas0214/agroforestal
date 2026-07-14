@@ -50,14 +50,16 @@ import { Category } from '../../../core/models/product.model';
     <table class="w-full text-sm">
       <thead class="bg-gray-50 border-b border-gray-100">
         <tr>
+          <th class="text-left pl-6 pr-2 py-3 text-gray-500 font-semibold w-12">#</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Nombre</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Slug</th>
           <th class="text-right px-6 py-3 text-gray-500 font-semibold">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (cat of filteredCategories(); track cat.id) {
+        @for (cat of filteredCategories(); track cat.id; let i = $index) {
           <tr class="border-b border-gray-50 hover:bg-gray-50">
+            <td class="pl-6 pr-2 py-4 text-gray-400 tabular-nums">{{ i + 1 }}</td>
             <td class="px-6 py-4 font-medium text-gray-900">{{ cat.name }}</td>
             <td class="px-6 py-4 text-gray-400 text-xs font-mono">{{ cat.slug }}</td>
             <td class="px-6 py-4 text-right space-x-2">
@@ -67,7 +69,7 @@ import { Category } from '../../../core/models/product.model';
           </tr>
         }
         @if (filteredCategories().length === 0) {
-          <tr><td colspan="3" class="px-6 py-12 text-center text-gray-400">
+          <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400">
             {{ categories().length === 0 ? 'No hay categorías aún' : 'Ninguna categoría coincide con la búsqueda' }}
           </td></tr>
         }
