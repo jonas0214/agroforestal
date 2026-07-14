@@ -217,7 +217,7 @@ export class ProductsComponent implements OnInit {
     return `${environment.siteUrl}/catalogo/${this.editingId()}`;
   }
 
-  /** Ícono central del QR: motivo del logo (sol y campos) en negro dentro de un engranaje. */
+  /** Ícono central del QR: motivo del logo (sol y campos) en negro, minimalista. */
   private qrCenterIcon(): string {
     const s = 240;
     const c = document.createElement('canvas');
@@ -226,36 +226,13 @@ export class ProductsComponent implements OnInit {
     const cx = s / 2, cy = s / 2;
     const ink = '#111111';
 
-    // Fondo blanco circular (para que respire dentro del QR)
+    // Fondo blanco circular
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.arc(cx, cy, s / 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Engranaje: dientes redondeados alrededor
-    const teeth = 12;
-    ctx.fillStyle = ink;
-    for (let i = 0; i < teeth; i++) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate((i / teeth) * Math.PI * 2);
-      ctx.beginPath();
-      (ctx as any).roundRect(-11, -s / 2 + 4, 22, 30, 8);
-      ctx.fill();
-      ctx.restore();
-    }
-    // Anillo del engranaje
-    ctx.beginPath();
-    ctx.arc(cx, cy, s / 2 - 24, 0, Math.PI * 2);
-    ctx.fill();
-    // Interior blanco
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(cx, cy, s / 2 - 42, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ── Motivo del logo, en negro ──
-    const innerR = s / 2 - 46;
+    const innerR = s / 2 - 14;
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
@@ -263,12 +240,12 @@ export class ProductsComponent implements OnInit {
 
     // Sol: rayos triangulares en abanico (mitad superior)
     ctx.fillStyle = ink;
-    const sunCy = cy + 10;
+    const sunCy = cy + 14;
     const rays = 7;
     for (let i = 0; i < rays; i++) {
-      const a  = Math.PI + ((i + 0.5) / rays) * Math.PI; // ángulos de la mitad superior
-      const r0 = 24, r1 = 64;
-      const spread = 0.10;
+      const a  = Math.PI + ((i + 0.5) / rays) * Math.PI;
+      const r0 = 30, r1 = 82;
+      const spread = 0.11;
       ctx.beginPath();
       ctx.moveTo(cx + r1 * Math.cos(a),          sunCy + r1 * Math.sin(a));
       ctx.lineTo(cx + r0 * Math.cos(a - spread), sunCy + r0 * Math.sin(a - spread));
@@ -278,19 +255,19 @@ export class ProductsComponent implements OnInit {
     }
     // Semicírculo del sol
     ctx.beginPath();
-    ctx.arc(cx, sunCy, 16, Math.PI, 0);
+    ctx.arc(cx, sunCy, 20, Math.PI, 0);
     ctx.closePath();
     ctx.fill();
 
     // Campos: tres franjas onduladas
     ctx.strokeStyle = ink;
     ctx.lineCap = 'round';
-    ctx.lineWidth = 11;
+    ctx.lineWidth = 14;
     for (let k = 0; k < 3; k++) {
-      const y = sunCy + 16 + k * 19;
+      const y = sunCy + 22 + k * 26;
       ctx.beginPath();
-      ctx.moveTo(cx - innerR, y + 10);
-      ctx.quadraticCurveTo(cx, y - 16, cx + innerR, y + 4);
+      ctx.moveTo(cx - innerR + 8, y + 12);
+      ctx.quadraticCurveTo(cx, y - 18, cx + innerR - 8, y + 4);
       ctx.stroke();
     }
     ctx.restore();
@@ -309,19 +286,9 @@ export class ProductsComponent implements OnInit {
       qrOptions: { errorCorrectionLevel: 'H' },
       image: this.qrCenterIcon(),
       imageOptions: { imageSize: 0.32, margin: 6, hideBackgroundDots: true },
-      dotsOptions: {
-        type: 'rounded',
-        gradient: {
-          type: 'linear',
-          rotation: Math.PI / 4,
-          colorStops: [
-            { offset: 0, color: '#2E7D32' },
-            { offset: 1, color: '#1a4d1e' },
-          ],
-        },
-      },
-      cornersSquareOptions: { type: 'extra-rounded', color: '#F36821' },
-      cornersDotOptions:    { type: 'dot',           color: '#2E7D32' },
+      dotsOptions:          { type: 'rounded',       color: '#111111' },
+      cornersSquareOptions: { type: 'extra-rounded', color: '#111111' },
+      cornersDotOptions:    { type: 'dot',           color: '#111111' },
       backgroundOptions:    { color: '#ffffff' },
     });
     const blob = await qr.getRawData('png');
@@ -342,56 +309,39 @@ export class ProductsComponent implements OnInit {
 <html><head><title>QR — ${name}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: Arial, Helvetica, sans-serif; display: flex; justify-content: center; padding: 24px; background: #f5f5f5; }
-  .cut { border: 2px dashed #bbb; border-radius: 28px; padding: 10px; height: fit-content; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; justify-content: center; padding: 24px; }
   .sticker {
-    width: 330px; border-radius: 22px; overflow: hidden; text-align: center;
-    background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    width: 320px; border: 2.5px solid #111; border-radius: 24px;
+    padding: 22px 20px 18px; text-align: center; background: #fff;
   }
-  .head {
-    background: linear-gradient(135deg, #F36821 0%, #d9531a 100%);
-    padding: 16px 18px 14px; color: #fff;
-  }
-  .head .brand { font-size: 18px; font-weight: 900; letter-spacing: 2.5px; text-transform: uppercase; }
-  .head small { display: block; font-size: 9.5px; opacity: .9; letter-spacing: .5px; margin-top: 3px; }
-  .name { padding: 12px 18px 0; }
-  .name h1 { font-size: 16px; color: #1a1a1a; line-height: 1.25; }
-  .sku {
-    display: inline-block; margin-top: 5px; font-size: 10px; font-weight: bold; color: #2E7D32;
-    background: #e8f3e9; border-radius: 99px; padding: 2px 10px;
-  }
-  .qrbox { padding: 10px 18px 4px; }
-  .qrbox img { width: 232px; height: 232px; }
-  .cta {
-    margin: 6px 18px 0; background: #2E7D32; color: #fff; border-radius: 14px;
-    padding: 10px 12px; font-size: 13px; font-weight: bold; line-height: 1.35;
-  }
-  .cta span { display: block; font-size: 10px; font-weight: normal; opacity: .85; margin-top: 2px; }
-  .foot { padding: 8px 18px 14px; }
-  .foot .url { font-size: 8.5px; color: #b5b5b5; word-break: break-all; }
-  .foot .since { font-size: 9px; color: #F36821; font-weight: bold; letter-spacing: 1px; margin-top: 3px; }
-  @media print { body { padding: 0; background: #fff; } .sticker { box-shadow: none; border: 1px solid #eee; } }
+  .brand { font-size: 17px; font-weight: 800; letter-spacing: 4px; color: #111; text-transform: uppercase; }
+  .sub { font-size: 8.5px; letter-spacing: 2px; color: #555; text-transform: uppercase; margin-top: 4px; }
+  .rule { width: 44px; height: 2px; background: #111; margin: 12px auto; }
+  h1 { font-size: 14px; font-weight: 700; color: #111; line-height: 1.3; text-transform: uppercase; letter-spacing: .5px; }
+  .sku { font-size: 10px; color: #666; letter-spacing: 1px; margin-top: 3px; }
+  img { width: 224px; height: 224px; margin: 12px 0 6px; }
+  .cta { font-size: 11.5px; font-weight: 700; color: #111; letter-spacing: 1.5px; text-transform: uppercase; }
+  .cta small { display: block; font-size: 9px; font-weight: 400; color: #555; letter-spacing: .5px; text-transform: none; margin-top: 3px; }
+  .foot { margin-top: 12px; border-top: 1px solid #ddd; padding-top: 8px; }
+  .foot .url { font-size: 8px; color: #999; word-break: break-all; }
+  .foot .since { font-size: 8.5px; color: #111; font-weight: 600; letter-spacing: 2px; margin-top: 3px; }
+  @media print { body { padding: 0; } }
 </style></head>
 <body>
-  <div class="cut">
-    <div class="sticker">
-      <div class="head">
-        <div class="brand">🌿 Agroforestal</div>
-        <small>DE COLOMBIA S.A.S · DISTRIBUIDOR OFICIAL STIHL</small>
-      </div>
-      <div class="name">
-        <h1>${name}</h1>
-        ${sku ? `<span class="sku">Ref. ${sku}</span>` : ''}
-      </div>
-      <div class="qrbox"><img src="${qr}" alt="QR"></div>
-      <div class="cta">
-        📱 ¡Escanéame!
-        <span>Cotiza este equipo o solicita tu mantenimiento en línea</span>
-      </div>
-      <div class="foot">
-        <div class="url">${this.productUrl()}</div>
-        <div class="since">DESDE 1977 · CALI, COLOMBIA</div>
-      </div>
+  <div class="sticker">
+    <div class="brand">Agroforestal</div>
+    <div class="sub">de Colombia S.A.S — Distribuidor oficial STIHL</div>
+    <div class="rule"></div>
+    <h1>${name}</h1>
+    ${sku ? `<div class="sku">REF. ${sku}</div>` : ''}
+    <img src="${qr}" alt="QR">
+    <div class="cta">
+      Escanea y cotiza
+      <small>Solicita tu cotización o mantenimiento en línea</small>
+    </div>
+    <div class="foot">
+      <div class="url">${this.productUrl()}</div>
+      <div class="since">DESDE 1977 — CALI, COLOMBIA</div>
     </div>
   </div>
   <script>window.onload = () => { window.print(); };<\/script>
