@@ -25,8 +25,9 @@ class QuoteController extends Controller
             'email' => 'required|email',
             'phone' => 'nullable|string|max:20',
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity'   => 'required|integer|min:1',
+            'items.*.product_id'   => 'nullable|exists:products,id',
+            'items.*.product_name' => 'required|string|max:255',
+            'items.*.quantity'     => 'required|integer|min:1',
             'notes' => 'nullable|string',
         ]);
 

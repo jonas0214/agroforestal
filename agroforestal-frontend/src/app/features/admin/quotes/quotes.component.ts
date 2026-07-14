@@ -27,7 +27,19 @@ import { Quote } from '../../../core/models/service-request.model';
                   <p class="font-medium text-gray-900">{{ quote.name }}</p>
                   <p class="text-xs text-gray-400">{{ quote.email }}</p>
                 </td>
-                <td class="px-6 py-4 text-gray-600">{{ quote.items.length }} producto(s)</td>
+                <td class="px-6 py-4 text-gray-600">
+                  <ul class="space-y-0.5">
+                    @for (item of quote.items; track $index) {
+                      <li class="text-xs">
+                        <span class="font-semibold text-gray-700">{{ item.quantity }}×</span>
+                        {{ item.product_name || ('Producto #' + item.product_id) }}
+                      </li>
+                    }
+                  </ul>
+                  @if (quote.notes) {
+                    <p class="text-xs text-gray-400 mt-1 italic">"{{ quote.notes }}"</p>
+                  }
+                </td>
                 <td class="px-6 py-4">
                   <span class="badge-status bg-blue-100 text-blue-700">{{ quote.status }}</span>
                 </td>

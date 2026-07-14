@@ -19,7 +19,7 @@ export interface Quote {
   name: string;
   email: string;
   phone?: string;
-  items: { product_id: number; quantity: number; product?: any }[];
+  items: { product_id?: number | null; product_name?: string; quantity: number; product?: any }[];
   notes?: string;
   status: 'pending' | 'reviewed' | 'sent' | 'accepted' | 'rejected';
   created_at: string;
