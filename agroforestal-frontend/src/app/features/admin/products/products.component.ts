@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../../core/services/product.service';
 import { Product, Category, Brand, ProductImage } from '../../../core/models/product.model';
 import { environment } from '../../../../environments/environment';
+import * as QRCode from 'qrcode';
 
 @Component({
   selector: 'app-admin-products',
@@ -29,6 +30,7 @@ export class ProductsComponent implements OnInit {
   uploadingImage = signal(false);
   savedMsg       = signal<string | null>(null);
   error          = signal<string | null>(null);
+  qrDataUrl      = signal<string | null>(null);
 
   // Filtros de búsqueda de la tabla
   searchTerm     = signal('');
@@ -84,6 +86,7 @@ export class ProductsComponent implements OnInit {
 
   openCreate() {
     this.editingId.set(null);
+    this.qrDataUrl.set(null);
     this.savedMsg.set(null);
     this.error.set(null);
     this.productImages.set([]);
@@ -94,6 +97,7 @@ export class ProductsComponent implements OnInit {
 
   openEdit(p: Product) {
     this.editingId.set(p.id);
+    this.qrDataUrl.set(null);
     this.savedMsg.set(null);
     this.error.set(null);
     this.productImages.set(p.images || []);
@@ -205,5 +209,70 @@ export class ProductsComponent implements OnInit {
   delete(id: number) {
     if (!confirm('¿Eliminar este producto?')) return;
     this.productService.deleteProduct(id).subscribe(() => this.loadAll());
+  }
+
+  // ── Código QR del producto ─────────────────────────────────────
+
+  productUrl(): string {
+    return `${environment.siteUrl}/catalogo/${this.editingId()}`;
+  }
+
+  async generateQr() {
+    if (!this.editingId()) return;
+    const dataUrl = await QRCode.toDataURL(this.productUrl(), {
+      width: 320,
+      margin: 2,
+      errorCorrectionLevel: 'H',
+      color: { dark: '#1a1a1a', light: '#ffffff' },
+    });
+    this.qrDataUrl.set(dataUrl);
+  }
+
+  printQr() {
+    const qr = this.qrDataUrl();
+    if (!qr) return;
+    const name = this.form.value.name || '';
+    const sku  = this.form.value.sku || '';
+    const win = window.open('', '_blank', 'width=480,height=640');
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html>
+<html><head><title>QR — ${name}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; display: flex; justify-content: center; padding: 24px; }
+  .sticker {
+    width: 320px; border: 2px solid #1a1a1a; border-radius: 16px;
+    padding: 20px; text-align: center;
+  }
+  .brand { font-size: 13px; font-weight: bold; letter-spacing: 1px; color: #F36821; text-transform: uppercase; }
+  .brand small { display: block; color: #666; font-weight: normal; letter-spacing: 0; font-size: 10px; margin-top: 2px; }
+  h1 { font-size: 15px; margin: 10px 0 2px; color: #1a1a1a; }
+  .sku { font-size: 11px; color: #888; margin-bottom: 8px; }
+  img { width: 240px; height: 240px; }
+  .cta { font-size: 12px; font-weight: bold; color: #2E7D32; margin-top: 6px; }
+  .url { font-size: 9px; color: #aaa; margin-top: 4px; word-break: break-all; }
+  @media print { body { padding: 0; } }
+</style></head>
+<body>
+  <div class="sticker">
+    <div class="brand">Agroforestal<small>de Colombia S.A.S · Distribuidor oficial STIHL</small></div>
+    <h1>${name}</h1>
+    ${sku ? `<div class="sku">Ref. ${sku}</div>` : ''}
+    <img src="${qr}" alt="QR">
+    <div class="cta">📱 Escanéame para cotizar<br>o solicitar mantenimiento</div>
+    <div class="url">${this.productUrl()}</div>
+  </div>
+  <script>window.onload = () => { window.print(); };<\/script>
+</body></html>`);
+    win.document.close();
+  }
+
+  downloadQr() {
+    const qr = this.qrDataUrl();
+    if (!qr) return;
+    const a = document.createElement('a');
+    a.href = qr;
+    a.download = `qr-${(this.form.value.sku || this.editingId())}.png`;
+    a.click();
   }
 }
