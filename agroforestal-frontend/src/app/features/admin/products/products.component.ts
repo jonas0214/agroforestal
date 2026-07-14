@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../../core/services/product.service';
 import { Product, Category, Brand, ProductImage } from '../../../core/models/product.model';
 import { environment } from '../../../../environments/environment';
-import * as QRCode from 'qrcode';
+import QRCodeStyling from 'qr-code-styling';
 
 @Component({
   selector: 'app-admin-products',
@@ -217,15 +217,53 @@ export class ProductsComponent implements OnInit {
     return `${environment.siteUrl}/catalogo/${this.editingId()}`;
   }
 
+  /** Ícono central del QR: hoja sobre círculo naranja, dibujada en canvas. */
+  private qrCenterIcon(): string {
+    const c = document.createElement('canvas');
+    c.width = c.height = 120;
+    const ctx = c.getContext('2d')!;
+    ctx.fillStyle = '#F36821';
+    ctx.beginPath();
+    ctx.arc(60, 60, 56, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = '58px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🌿', 60, 64);
+    return c.toDataURL('image/png');
+  }
+
   async generateQr() {
     if (!this.editingId()) return;
-    const dataUrl = await QRCode.toDataURL(this.productUrl(), {
-      width: 320,
-      margin: 2,
-      errorCorrectionLevel: 'H',
-      color: { dark: '#1a1a1a', light: '#ffffff' },
+    const qr = new QRCodeStyling({
+      width:  640,
+      height: 640,
+      type:   'canvas',
+      data:   this.productUrl(),
+      margin: 16,
+      qrOptions: { errorCorrectionLevel: 'H' },
+      image: this.qrCenterIcon(),
+      imageOptions: { imageSize: 0.32, margin: 6, hideBackgroundDots: true },
+      dotsOptions: {
+        type: 'rounded',
+        gradient: {
+          type: 'linear',
+          rotation: Math.PI / 4,
+          colorStops: [
+            { offset: 0, color: '#2E7D32' },
+            { offset: 1, color: '#1a4d1e' },
+          ],
+        },
+      },
+      cornersSquareOptions: { type: 'extra-rounded', color: '#F36821' },
+      cornersDotOptions:    { type: 'dot',           color: '#2E7D32' },
+      backgroundOptions:    { color: '#ffffff' },
     });
-    this.qrDataUrl.set(dataUrl);
+    const blob = await qr.getRawData('png');
+    if (!blob) return;
+    const reader = new FileReader();
+    reader.onload = () => this.qrDataUrl.set(reader.result as string);
+    reader.readAsDataURL(blob as Blob);
   }
 
   printQr() {
@@ -238,29 +276,58 @@ export class ProductsComponent implements OnInit {
     win.document.write(`<!DOCTYPE html>
 <html><head><title>QR — ${name}</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; display: flex; justify-content: center; padding: 24px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: Arial, Helvetica, sans-serif; display: flex; justify-content: center; padding: 24px; background: #f5f5f5; }
+  .cut { border: 2px dashed #bbb; border-radius: 28px; padding: 10px; height: fit-content; }
   .sticker {
-    width: 320px; border: 2px solid #1a1a1a; border-radius: 16px;
-    padding: 20px; text-align: center;
+    width: 330px; border-radius: 22px; overflow: hidden; text-align: center;
+    background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.12);
   }
-  .brand { font-size: 13px; font-weight: bold; letter-spacing: 1px; color: #F36821; text-transform: uppercase; }
-  .brand small { display: block; color: #666; font-weight: normal; letter-spacing: 0; font-size: 10px; margin-top: 2px; }
-  h1 { font-size: 15px; margin: 10px 0 2px; color: #1a1a1a; }
-  .sku { font-size: 11px; color: #888; margin-bottom: 8px; }
-  img { width: 240px; height: 240px; }
-  .cta { font-size: 12px; font-weight: bold; color: #2E7D32; margin-top: 6px; }
-  .url { font-size: 9px; color: #aaa; margin-top: 4px; word-break: break-all; }
-  @media print { body { padding: 0; } }
+  .head {
+    background: linear-gradient(135deg, #F36821 0%, #d9531a 100%);
+    padding: 16px 18px 14px; color: #fff;
+  }
+  .head .brand { font-size: 18px; font-weight: 900; letter-spacing: 2.5px; text-transform: uppercase; }
+  .head small { display: block; font-size: 9.5px; opacity: .9; letter-spacing: .5px; margin-top: 3px; }
+  .name { padding: 12px 18px 0; }
+  .name h1 { font-size: 16px; color: #1a1a1a; line-height: 1.25; }
+  .sku {
+    display: inline-block; margin-top: 5px; font-size: 10px; font-weight: bold; color: #2E7D32;
+    background: #e8f3e9; border-radius: 99px; padding: 2px 10px;
+  }
+  .qrbox { padding: 10px 18px 4px; }
+  .qrbox img { width: 232px; height: 232px; }
+  .cta {
+    margin: 6px 18px 0; background: #2E7D32; color: #fff; border-radius: 14px;
+    padding: 10px 12px; font-size: 13px; font-weight: bold; line-height: 1.35;
+  }
+  .cta span { display: block; font-size: 10px; font-weight: normal; opacity: .85; margin-top: 2px; }
+  .foot { padding: 8px 18px 14px; }
+  .foot .url { font-size: 8.5px; color: #b5b5b5; word-break: break-all; }
+  .foot .since { font-size: 9px; color: #F36821; font-weight: bold; letter-spacing: 1px; margin-top: 3px; }
+  @media print { body { padding: 0; background: #fff; } .sticker { box-shadow: none; border: 1px solid #eee; } }
 </style></head>
 <body>
-  <div class="sticker">
-    <div class="brand">Agroforestal<small>de Colombia S.A.S · Distribuidor oficial STIHL</small></div>
-    <h1>${name}</h1>
-    ${sku ? `<div class="sku">Ref. ${sku}</div>` : ''}
-    <img src="${qr}" alt="QR">
-    <div class="cta">📱 Escanéame para cotizar<br>o solicitar mantenimiento</div>
-    <div class="url">${this.productUrl()}</div>
+  <div class="cut">
+    <div class="sticker">
+      <div class="head">
+        <div class="brand">🌿 Agroforestal</div>
+        <small>DE COLOMBIA S.A.S · DISTRIBUIDOR OFICIAL STIHL</small>
+      </div>
+      <div class="name">
+        <h1>${name}</h1>
+        ${sku ? `<span class="sku">Ref. ${sku}</span>` : ''}
+      </div>
+      <div class="qrbox"><img src="${qr}" alt="QR"></div>
+      <div class="cta">
+        📱 ¡Escanéame!
+        <span>Cotiza este equipo o solicita tu mantenimiento en línea</span>
+      </div>
+      <div class="foot">
+        <div class="url">${this.productUrl()}</div>
+        <div class="since">DESDE 1977 · CALI, COLOMBIA</div>
+      </div>
+    </div>
   </div>
   <script>window.onload = () => { window.print(); };<\/script>
 </body></html>`);
