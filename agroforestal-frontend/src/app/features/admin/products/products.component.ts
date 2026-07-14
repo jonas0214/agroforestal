@@ -217,19 +217,84 @@ export class ProductsComponent implements OnInit {
     return `${environment.siteUrl}/catalogo/${this.editingId()}`;
   }
 
-  /** Ícono central del QR: hoja sobre círculo naranja, dibujada en canvas. */
+  /** Ícono central del QR: motivo del logo (sol y campos) en negro dentro de un engranaje. */
   private qrCenterIcon(): string {
+    const s = 240;
     const c = document.createElement('canvas');
-    c.width = c.height = 120;
+    c.width = c.height = s;
     const ctx = c.getContext('2d')!;
-    ctx.fillStyle = '#F36821';
+    const cx = s / 2, cy = s / 2;
+    const ink = '#111111';
+
+    // Fondo blanco circular (para que respire dentro del QR)
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(60, 60, 56, 0, Math.PI * 2);
+    ctx.arc(cx, cy, s / 2, 0, Math.PI * 2);
     ctx.fill();
-    ctx.font = '58px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🌿', 60, 64);
+
+    // Engranaje: dientes redondeados alrededor
+    const teeth = 12;
+    ctx.fillStyle = ink;
+    for (let i = 0; i < teeth; i++) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate((i / teeth) * Math.PI * 2);
+      ctx.beginPath();
+      (ctx as any).roundRect(-11, -s / 2 + 4, 22, 30, 8);
+      ctx.fill();
+      ctx.restore();
+    }
+    // Anillo del engranaje
+    ctx.beginPath();
+    ctx.arc(cx, cy, s / 2 - 24, 0, Math.PI * 2);
+    ctx.fill();
+    // Interior blanco
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(cx, cy, s / 2 - 42, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ── Motivo del logo, en negro ──
+    const innerR = s / 2 - 46;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+    ctx.clip();
+
+    // Sol: rayos triangulares en abanico (mitad superior)
+    ctx.fillStyle = ink;
+    const sunCy = cy + 10;
+    const rays = 7;
+    for (let i = 0; i < rays; i++) {
+      const a  = Math.PI + ((i + 0.5) / rays) * Math.PI; // ángulos de la mitad superior
+      const r0 = 24, r1 = 64;
+      const spread = 0.10;
+      ctx.beginPath();
+      ctx.moveTo(cx + r1 * Math.cos(a),          sunCy + r1 * Math.sin(a));
+      ctx.lineTo(cx + r0 * Math.cos(a - spread), sunCy + r0 * Math.sin(a - spread));
+      ctx.lineTo(cx + r0 * Math.cos(a + spread), sunCy + r0 * Math.sin(a + spread));
+      ctx.closePath();
+      ctx.fill();
+    }
+    // Semicírculo del sol
+    ctx.beginPath();
+    ctx.arc(cx, sunCy, 16, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Campos: tres franjas onduladas
+    ctx.strokeStyle = ink;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 11;
+    for (let k = 0; k < 3; k++) {
+      const y = sunCy + 16 + k * 19;
+      ctx.beginPath();
+      ctx.moveTo(cx - innerR, y + 10);
+      ctx.quadraticCurveTo(cx, y - 16, cx + innerR, y + 4);
+      ctx.stroke();
+    }
+    ctx.restore();
+
     return c.toDataURL('image/png');
   }
 
