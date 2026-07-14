@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Quote;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,31 @@ class QuoteController extends Controller
         if (!$user->isAdmin()) {
             $query->where('user_id', $user->id);
         }
-        return response()->json($query->latest()->paginate(15));
+        $paginated = $query->latest()->paginate(15);
+        $paginated->getCollection()->transform(fn ($quote) => $this->withProductInfo($quote));
+
+        return response()->json($paginated);
+    }
+
+    /** Adjunta imagen, precio y slug del producto a cada item de la cotización. */
+    private function withProductInfo(Quote $quote): Quote
+    {
+        $items = collect($quote->items ?? []);
+        $ids   = $items->pluck('product_id')->filter()->unique();
+        if ($ids->isEmpty()) {
+            return $quote;
+        }
+
+        $products = Product::whereIn('id', $ids)
+            ->get(['id', 'name', 'slug', 'cover_image', 'price', 'sale_price', 'sku'])
+            ->keyBy('id');
+
+        $quote->items = $items->map(function ($item) use ($products) {
+            $item['product'] = $products->get($item['product_id'] ?? null);
+            return $item;
+        })->all();
+
+        return $quote;
     }
 
     public function store(Request $request)
@@ -44,7 +69,7 @@ class QuoteController extends Controller
         if (!$user->isAdmin() && $quote->user_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-        return response()->json($quote);
+        return response()->json($this->withProductInfo($quote));
     }
 
     public function update(Request $request, Quote $quote)

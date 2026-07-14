@@ -46,14 +46,46 @@ import { CartService } from '../../../core/services/cart.service';
             } @else {
               <p class="text-xs text-gray-400 mb-3">Escribe el producto que te interesa, o agrégalo primero al carrito desde el <a routerLink="/catalogo" class="text-brand-orange hover:underline">catálogo</a>.</p>
             }
+
             <div formArrayName="items" class="space-y-3">
               @for (item of items.controls; track $index) {
-                <div [formGroupName]="$index" class="flex gap-3 items-center">
-                  <input formControlName="product_name" type="text" placeholder="Nombre del producto" class="input flex-1 text-sm"
-                         [readonly]="item.value.product_id" [class.bg-gray-50]="item.value.product_id">
-                  <input formControlName="quantity" type="number" min="1" placeholder="Cant." class="input w-24 text-sm">
-                  @if (items.length > 1) {
-                    <button type="button" (click)="removeItem($index)" class="text-red-500 hover:text-red-700 p-2">✕</button>
+                <div [formGroupName]="$index">
+                  @if (item.value.product_id) {
+                    <!-- Producto del carrito: tarjeta con foto -->
+                    <div class="flex items-center gap-4 border border-gray-100 rounded-xl p-3 bg-gray-50/50">
+                      @if (item.value.cover_image) {
+                        <img [src]="item.value.cover_image" [alt]="item.value.product_name"
+                             class="w-16 h-16 object-cover rounded-lg border border-gray-100 bg-white shrink-0">
+                      } @else {
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                          <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                      }
+                      <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-900 text-sm truncate">{{ item.value.product_name }}</p>
+                        @if (item.value.brand) { <p class="text-xs text-gray-400">{{ item.value.brand }}</p> }
+                        @if (item.value.price) {
+                          <p class="text-xs font-semibold text-brand-green">{{ item.value.price | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+                        } @else {
+                          <p class="text-xs text-gray-400">Precio a consultar</p>
+                        }
+                      </div>
+                      <div class="flex items-center gap-2 shrink-0">
+                        <label class="text-xs text-gray-400 hidden sm:block">Cant.</label>
+                        <input formControlName="quantity" type="number" min="1" class="input w-20 text-sm text-center">
+                        <button type="button" (click)="removeItem($index)" title="Quitar"
+                                class="text-red-400 hover:text-red-600 p-2">✕</button>
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- Producto escrito a mano -->
+                    <div class="flex gap-3 items-center">
+                      <input formControlName="product_name" type="text" placeholder="Nombre del producto" class="input flex-1 text-sm">
+                      <input formControlName="quantity" type="number" min="1" placeholder="Cant." class="input w-24 text-sm">
+                      @if (items.length > 1) {
+                        <button type="button" (click)="removeItem($index)" class="text-red-500 hover:text-red-700 p-2">✕</button>
+                      }
+                    </div>
                   }
                 </div>
               }
@@ -107,18 +139,28 @@ export class QuoteFormComponent {
     if (cartItems.length > 0) {
       this.fromCart.set(true);
       for (const ci of cartItems) {
-        this.items.push(this.createItem(ci.name, ci.quantity, ci.id));
+        this.items.push(this.fb.group({
+          product_id:   [ci.id],
+          product_name: [ci.name, Validators.required],
+          quantity:     [ci.quantity, [Validators.required, Validators.min(1)]],
+          cover_image:  [ci.cover_image ?? null],
+          price:        [ci.price || null],
+          brand:        [ci.brand ?? null],
+        }));
       }
     } else {
       this.items.push(this.createItem());
     }
   }
 
-  createItem(name = '', quantity = 1, productId: number | null = null) {
+  createItem() {
     return this.fb.group({
-      product_id:   [productId],
-      product_name: [name, Validators.required],
-      quantity:     [quantity, [Validators.required, Validators.min(1)]],
+      product_id:   [null],
+      product_name: ['', Validators.required],
+      quantity:     [1, [Validators.required, Validators.min(1)]],
+      cover_image:  [null],
+      price:        [null],
+      brand:        [null],
     });
   }
 
@@ -127,10 +169,14 @@ export class QuoteFormComponent {
 
   submit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.items.length === 0) { this.error.set('Agrega al menos un producto.'); return; }
     this.loading.set(true);
     this.error.set(null);
     const payload = {
-      ...this.form.value,
+      name:  this.form.value.name,
+      email: this.form.value.email,
+      phone: this.form.value.phone,
+      notes: this.form.value.notes,
       items: this.items.value.map((it: any) => ({
         product_id:   it.product_id ?? null,
         product_name: it.product_name,

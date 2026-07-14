@@ -32,4 +32,12 @@ export class ServiceRequestService {
   getMyQuotes() {
     return this.http.get<PaginatedResponse<Quote>>(`${this.api}/quotes`);
   }
+
+  updateQuoteStatus(id: number, status: string) {
+    return this.http.patch<Quote>(`${this.api}/admin/quotes/${id}`, { status });
+  }
+
+  deleteQuote(id: number) {
+    return this.http.delete(`${this.api}/admin/quotes/${id}`);
+  }
 }
