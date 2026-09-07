@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { SettingsService } from '../../../core/services/settings.service';
@@ -16,6 +16,11 @@ export class LayoutComponent implements OnInit {
   settingsService = inject(SettingsService);
   cart            = inject(CartService);
   private platformId = inject(PLATFORM_ID);
+  private router     = inject(Router);
+
+  // La barra de cotización estorba justo donde se completa la solicitud
+  private currentUrl = signal('');
+  onQuotePage = () => this.currentUrl().startsWith('/cotizacion');
 
   mobileOpen     = signal(false);
   showChatBubble = signal(false);
@@ -25,6 +30,11 @@ export class LayoutComponent implements OnInit {
   logout()     { this.auth.logout(); }
 
   ngOnInit() {
+    this.currentUrl.set(this.router.url);
+    this.router.events.subscribe(e => {
+      if (e instanceof NavigationEnd) this.currentUrl.set(e.urlAfterRedirects);
+    });
+
     if (isPlatformBrowser(this.platformId)) {
       // La mascota "saluda" desde el botón de WhatsApp tras unos segundos
       setTimeout(() => { if (this.whatsappNumber()) this.showChatBubble.set(true); }, 4000);

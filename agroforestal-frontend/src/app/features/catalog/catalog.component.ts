@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
+import { CartService } from '../../core/services/cart.service';
 import { Product, Category, Brand, PaginatedResponse } from '../../core/models/product.model';
 
 const PER_PAGE = 24;
@@ -46,12 +47,43 @@ export class CatalogComponent implements OnInit, OnDestroy {
   sortedCategories = computed(() => [...this.categories()].sort(this.byName));
   sortedBrands     = computed(() => [...this.brands()].sort(this.byName));
 
+  // Buscadores dentro del panel: 29 categorías y 44 marcas son demasiadas
+  // para recorrer a ojo (llegar a DUCATI exigía pasar por 10 marcas antes).
+  catQuery   = signal('');
+  brandQuery = signal('');
+
+  private matches = (name: string, q: string) =>
+    name.localeCompare(q, 'es', { sensitivity: 'base' }) === 0 ||
+    name.toLocaleLowerCase('es').normalize('NFD').replace(/\p{Diacritic}/gu, '')
+        .includes(q.toLocaleLowerCase('es').normalize('NFD').replace(/\p{Diacritic}/gu, ''));
+
+  visibleCategories = computed(() => {
+    const q = this.catQuery().trim();
+    return q ? this.sortedCategories().filter(c => this.matches(c.name, q)) : this.sortedCategories();
+  });
+
+  visibleBrands = computed(() => {
+    const q = this.brandQuery().trim();
+    return q ? this.sortedBrands().filter(b => this.matches(b.name, q)) : this.sortedBrands();
+  });
+
+  /** Las marcas con más equipos, fijadas arriba para no castigar a STIHL por empezar por S. */
+  pinnedBrands = computed(() =>
+    [...this.brands()]
+      .filter(b => (b.products_count ?? 0) > 0)
+      .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0))
+      .slice(0, 5));
+
   total       = computed(() => this.pagination().total ?? this.products().length);
   hasMore     = computed(() => this.products().length < this.total());
   filterCount = computed(() =>
     this.selectedCategories().length + this.selectedBrands().length + (this.onlyAvailable() ? 1 : 0));
 
   private state = inject(CatalogStateService);
+  cart          = inject(CartService);
+
+  // Ids agregados hace un instante, para confirmar en la propia tarjeta
+  justAdded = signal<number[]>([]);
 
   constructor(
     private productService: ProductService,
@@ -173,6 +205,22 @@ export class CatalogComponent implements OnInit, OnDestroy {
     this.sort = 'name_asc';
     this.router.navigate(['/catalogo']);
   }
+
+  /**
+   * Agrega sin salir del catálogo ni abrir el cajón: quien cotiza varios
+   * equipos los va marcando y sigue navegando.
+   */
+  addToCart(product: Product, ev: Event) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.cart.add(product, false);
+    this.justAdded.update(ids => [...ids, product.id]);
+    setTimeout(() => this.justAdded.update(ids => ids.filter(i => i !== product.id)), 1800);
+  }
+
+  wasAdded(id: number) { return this.justAdded().includes(id); }
+
+  inCart(id: number) { return this.cart.items().some(i => i.id === id); }
 
   ngOnDestroy() {
     // Se guarda al salir hacia la ficha del producto (o a donde sea)

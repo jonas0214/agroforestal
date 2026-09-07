@@ -23,7 +23,12 @@ export class CartService {
   total = computed(() => this.items().reduce((sum, i) => sum + i.price * i.quantity, 0));
   count = computed(() => this.items().reduce((sum, i) => sum + i.quantity, 0));
 
-  add(product: Product) {
+  /**
+   * @param openDrawer abrir el cajón al agregar. Desde la ficha del producto
+   * conviene (es el final del recorrido); desde el catálogo no, porque ahí se
+   * agregan varios seguidos y el cajón interrumpe la navegación.
+   */
+  add(product: Product, openDrawer = true) {
     const price = Number(product.sale_price || product.price || 0);
     const existing = this.items().find(i => i.id === product.id);
     if (existing) {
@@ -42,7 +47,7 @@ export class CartService {
       }]);
     }
     this.save();
-    this.isOpen.set(true);
+    if (openDrawer) this.isOpen.set(true);
   }
 
   remove(id: number) {
