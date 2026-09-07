@@ -1,8 +1,9 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
+import { CatalogStateService } from '../../core/services/catalog-state.service';
 import { Product, Category, Brand, PaginatedResponse } from '../../core/models/product.model';
 
 const PER_PAGE = 24;
@@ -13,7 +14,7 @@ const PER_PAGE = 24;
   imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './catalog.component.html',
 })
-export class CatalogComponent implements OnInit {
+export class CatalogComponent implements OnInit, OnDestroy {
   products   = signal<Product[]>([]);
   categories = signal<Category[]>([]);
   brands     = signal<Brand[]>([]);
@@ -50,11 +51,21 @@ export class CatalogComponent implements OnInit {
   filterCount = computed(() =>
     this.selectedCategories().length + this.selectedBrands().length + (this.onlyAvailable() ? 1 : 0));
 
+  private state = inject(CatalogStateService);
+
   constructor(
     private productService: ProductService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
+
+  /** Identifica un conjunto de filtros: si cambia, hay que pedir de nuevo. */
+  private stateKey(): string {
+    return JSON.stringify([
+      this.selectedCategories(), this.selectedBrands(),
+      this.onlyAvailable(), this.searchTerm, this.sort,
+    ]);
+  }
 
   ngOnInit() {
     this.productService.getCategories().subscribe(c => this.categories.set(c));
@@ -65,6 +76,20 @@ export class CatalogComponent implements OnInit {
       this.onlyAvailable.set(params['disponibles'] === '1');
       this.searchTerm = params['search'] || '';
       this.sort       = params['sort'] || 'name_asc';
+
+      // Al volver de una ficha con los mismos filtros, se recupera lo que ya
+      // estaba cargado en vez de rehacer la primera petición.
+      const snap = this.state.restore(this.stateKey());
+      if (snap) {
+        this.products.set(snap.products);
+        this.pagination.set(snap.pagination);
+        this.currentPage = snap.page;
+        this.loading.set(false);
+        // Esperar al render para devolver el scroll a donde estaba
+        setTimeout(() => window.scrollTo({ top: snap.scrollY, behavior: 'auto' }), 0);
+        return;
+      }
+
       this.currentPage = 1;
       this.loadProducts();
     });
@@ -140,12 +165,24 @@ export class CatalogComponent implements OnInit {
   }
 
   clearFilters() {
+    this.state.clear();
     this.searchTerm = '';
     this.selectedCategories.set([]);
     this.selectedBrands.set([]);
     this.onlyAvailable.set(false);
     this.sort = 'name_asc';
     this.router.navigate(['/catalogo']);
+  }
+
+  ngOnDestroy() {
+    // Se guarda al salir hacia la ficha del producto (o a donde sea)
+    this.state.save({
+      key:        this.stateKey(),
+      products:   this.products(),
+      pagination: this.pagination(),
+      page:       this.currentPage,
+      scrollY:    window.scrollY,
+    });
   }
 
   getCategoryName(slug: string): string {
