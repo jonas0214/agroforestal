@@ -65,7 +65,7 @@
               <a [routerLink]="['/catalogo']" [queryParams]="{ brand: product()!.brand!.slug }"
                  class="inline-block mb-3" [title]="'Ver todo de ' + product()!.brand!.name">
                 <img [src]="product()!.brand!.logo" [alt]="product()!.brand!.name"
-                     class="h-10 w-auto max-w-[160px] object-contain mix-blend-multiply">
+                     class="h-16 w-auto max-w-[230px] object-contain mix-blend-multiply">
               </a>
             } @else {
               <p class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-orange mb-3">

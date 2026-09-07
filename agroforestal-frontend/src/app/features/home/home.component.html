@@ -224,11 +224,11 @@
             <div #brandRail class="flex gap-2 overflow-x-auto pb-1.5 snap-x rail-scroll">
               @for (b of topBrands(); track b.id) {
                 <a [routerLink]="['/catalogo']" [queryParams]="{ brand: b.slug }" [title]="b.name"
-                   class="snap-start shrink-0 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3B2A1A]/70 hover:text-brand-orange bg-white border border-[#E8DDD0] hover:border-brand-orange rounded-full px-3.5 py-1.5 transition-colors">
+                   class="snap-start shrink-0 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3B2A1A]/70 hover:text-brand-orange bg-white border border-[#E8DDD0] hover:border-brand-orange rounded-full px-4 py-2 transition-colors">
                   @if (b.logo) {
                     <!-- Con logo no se repite el nombre: el logo YA es el nombre -->
                     <img [src]="b.logo" [alt]="b.name" loading="lazy"
-                         class="h-6 w-auto max-w-[84px] object-contain mix-blend-multiply">
+                         class="h-8 w-auto max-w-[110px] object-contain mix-blend-multiply">
                   } @else {
                     {{ b.name }}
                   }
@@ -563,7 +563,7 @@
         <div class="flex items-center shrink-0 px-10">
           @if (brand.logo) {
             <img [src]="brand.logo" [alt]="brand.name" loading="lazy"
-                 class="h-11 w-auto max-w-[150px] object-contain mix-blend-multiply opacity-55 hover:opacity-100 transition-opacity">
+                 class="h-14 w-auto max-w-[190px] object-contain mix-blend-multiply opacity-90 hover:opacity-100 transition-opacity">
           } @else {
             <span class="font-black text-2xl text-[#3B2A1A]/20 tracking-[0.15em] uppercase hover:text-brand-orange/60 transition-colors cursor-default">
               {{ brand.name }}
@@ -585,7 +585,7 @@
         <div class="flex items-center shrink-0 px-10">
           @if (brand.logo) {
             <img [src]="brand.logo" [alt]="" loading="lazy"
-                 class="h-8 w-auto max-w-[120px] object-contain mix-blend-multiply opacity-25">
+                 class="h-10 w-auto max-w-[150px] object-contain mix-blend-multiply opacity-40">
           } @else {
             <span class="font-serif italic text-xl text-[#3B2A1A]/12 tracking-[0.1em] uppercase cursor-default">
               {{ brand.name }}

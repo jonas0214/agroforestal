@@ -328,7 +328,12 @@
                 <!-- Info -->
                 <div class="p-3 sm:p-4 flex flex-col flex-1">
                   @if (product.brand) {
-                    <p class="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange mb-1">{{ product.brand.name }}</p>
+                    @if (product.brand.logo) {
+                      <img [src]="product.brand.logo" [alt]="product.brand.name" loading="lazy"
+                           class="h-6 sm:h-7 w-auto max-w-[92px] object-contain mix-blend-multiply mb-1.5">
+                    } @else {
+                      <p class="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange mb-1">{{ product.brand.name }}</p>
+                    }
                   }
                   <a [routerLink]="['/catalogo', product.id]"
                      class="font-semibold text-[#3B2A1A] text-xs sm:text-sm leading-snug line-clamp-2 mb-auto hover:text-brand-orange transition-colors">
