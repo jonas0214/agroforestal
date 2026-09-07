@@ -78,10 +78,15 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   // Vacío hasta que el API responda — evita flash de imágenes de fallback
   heroSlides: { bg: string; label: string }[] = [];
 
-  marqueeBrands = [
-    'STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita',
-    'STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita',
-  ];
+  /**
+   * Franja de marcas: antes era una lista escrita a mano que incluía marcas
+   * que no están en el catálogo. Ahora sale del API y se duplica para que el
+   * desplazamiento continuo no muestre el corte.
+   */
+  marqueeBrands = computed(() => {
+    const bs = this.topBrands();
+    return bs.length ? [...bs, ...bs] : [];
+  });
 
   navSections = [
     { id: 'sec-hero',       label: 'Inicio',     dark: true  },

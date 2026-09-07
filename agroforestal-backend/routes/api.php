@@ -66,6 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/admin/media/hero',           [MediaController::class, 'deleteHeroImage']);
         Route::post('/admin/media/feed',             [MediaController::class, 'uploadFeedImage']);
         Route::delete('/admin/media/feed',           [MediaController::class, 'deleteFeedImage']);
+        Route::post('/admin/media/brand-logo',       [MediaController::class, 'uploadBrandLogo']);
+        Route::delete('/admin/media/brand-logo',     [MediaController::class, 'deleteBrandLogo']);
         Route::post('/admin/media/product-image',    [MediaController::class, 'uploadProductImage']);
         Route::delete('/admin/media/product-image/{id}', [MediaController::class, 'deleteProductImage']);
         Route::patch('/admin/media/product-image/{id}/cover', [MediaController::class, 'setProductCover']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -162,6 +163,30 @@ class MediaController extends Controller
         }
 
         return response()->json(['message' => 'reordered']);
+    }
+
+    /** Logo de marca: se guarda en la propia marca, no en settings. */
+    public function uploadBrandLogo(Request $request)
+    {
+        $data = $request->validate([
+            'file'     => 'required|image|max:2048',
+            'brand_id' => 'required|exists:brands,id',
+        ]);
+
+        $brand = Brand::findOrFail($data['brand_id']);
+        $brand->update(['logo' => $this->storePublic($request->file('file'), 'brands')]);
+
+        return response()->json($brand->fresh());
+    }
+
+    public function deleteBrandLogo(Request $request)
+    {
+        $data = $request->validate(['brand_id' => 'required|exists:brands,id']);
+
+        $brand = Brand::findOrFail($data['brand_id']);
+        $brand->update(['logo' => null]);
+
+        return response()->json($brand->fresh());
     }
 
     private function storePublic($file, string $folder): string

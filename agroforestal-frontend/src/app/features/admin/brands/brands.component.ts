@@ -12,7 +12,12 @@ import { Brand } from '../../../core/models/product.model';
   template: `
 <div class="p-8">
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Marcas</h1>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Marcas</h1>
+      <p class="text-gray-400 text-xs mt-1">
+        Sube el logo de cada marca. Se ve mejor en PNG con fondo transparente, apaisado y máximo 2 MB.
+      </p>
+    </div>
     <button (click)="openCreate()" class="btn-primary">+ Nueva marca</button>
   </div>
 
@@ -48,6 +53,7 @@ import { Brand } from '../../../core/models/product.model';
       <thead class="bg-gray-50 border-b border-gray-100">
         <tr>
           <th class="text-left pl-6 pr-2 py-3 text-gray-500 font-semibold w-12">#</th>
+          <th class="text-left px-4 py-3 text-gray-500 font-semibold w-28">Logo</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Nombre</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold hidden md:table-cell">Sitio web</th>
           <th class="text-left px-6 py-3 text-gray-500 font-semibold">Slug</th>
@@ -58,6 +64,27 @@ import { Brand } from '../../../core/models/product.model';
         @for (brand of brands(); track brand.id; let i = $index) {
           <tr class="border-b border-gray-50 hover:bg-gray-50">
             <td class="pl-6 pr-2 py-4 text-gray-400 tabular-nums">{{ i + 1 }}</td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <label class="cursor-pointer group/logo"
+                       [title]="brand.logo ? 'Cambiar logo' : 'Subir logo'">
+                  <input type="file" accept="image/*" class="hidden"
+                         (change)="subirLogo(brand, $event)">
+                  @if (brand.logo) {
+                    <img [src]="brand.logo" [alt]="brand.name"
+                         class="w-16 h-10 object-contain rounded border border-gray-200 bg-white p-1 group-hover/logo:border-brand-orange transition-colors">
+                  } @else {
+                    <span class="w-16 h-10 rounded border border-dashed border-gray-300 flex items-center justify-center text-[10px] text-gray-400 group-hover/logo:border-brand-orange group-hover/logo:text-brand-orange transition-colors">
+                      @if (subiendo() === brand.id) { ... } @else { Subir }
+                    </span>
+                  }
+                </label>
+                @if (brand.logo) {
+                  <button (click)="quitarLogo(brand)" title="Quitar logo"
+                          class="text-gray-300 hover:text-red-500 text-xs">✕</button>
+                }
+              </div>
+            </td>
             <td class="px-6 py-4 font-medium text-gray-900">{{ brand.name }}</td>
             <td class="px-6 py-4 text-gray-500 text-xs hidden md:table-cell">{{ brand.website || '—' }}</td>
             <td class="px-6 py-4 text-gray-400 text-xs font-mono">{{ brand.slug }}</td>
@@ -68,7 +95,7 @@ import { Brand } from '../../../core/models/product.model';
           </tr>
         }
         @if (brands().length === 0) {
-          <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No hay marcas aún</td></tr>
+          <tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No hay marcas aún</td></tr>
         }
       </tbody>
     </table>
@@ -82,6 +109,7 @@ export class BrandsComponent implements OnInit {
   private api  = environment.apiUrl;
 
   brands    = signal<Brand[]>([]);
+  subiendo  = signal<number | null>(null);
   showForm  = signal(false);
   editingId = signal<number | null>(null);
   loading   = signal(false);
@@ -110,6 +138,35 @@ export class BrandsComponent implements OnInit {
     this.error.set(null);
     this.form.patchValue(b);
     this.showForm.set(true);
+  }
+
+  subirLogo(brand: Brand, ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('brand_id', String(brand.id));
+
+    this.subiendo.set(brand.id);
+    this.http.post<Brand>(`${this.api}/admin/media/brand-logo`, fd).subscribe({
+      next: actualizada => {
+        this.brands.update(bs => bs.map(b => b.id === actualizada.id ? actualizada : b));
+        this.subiendo.set(null);
+        input.value = '';        // permite volver a elegir el mismo archivo
+      },
+      error: err => {
+        this.subiendo.set(null);
+        this.error.set(err?.error?.message || 'No se pudo subir el logo.');
+      },
+    });
+  }
+
+  quitarLogo(brand: Brand) {
+    this.http.delete<Brand>(`${this.api}/admin/media/brand-logo`, { body: { brand_id: brand.id } })
+      .subscribe(actualizada =>
+        this.brands.update(bs => bs.map(b => b.id === actualizada.id ? actualizada : b)));
   }
 
   save() {

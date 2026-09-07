@@ -224,7 +224,10 @@
             <div #brandRail class="flex gap-2 overflow-x-auto pb-1.5 snap-x rail-scroll">
               @for (b of topBrands(); track b.id) {
                 <a [routerLink]="['/catalogo']" [queryParams]="{ brand: b.slug }"
-                   class="snap-start shrink-0 inline-flex items-baseline gap-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3B2A1A]/70 hover:text-brand-orange bg-white border border-[#E8DDD0] hover:border-brand-orange rounded-full px-3.5 py-2 transition-colors">
+                   class="snap-start shrink-0 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3B2A1A]/70 hover:text-brand-orange bg-white border border-[#E8DDD0] hover:border-brand-orange rounded-full pl-2.5 pr-3.5 py-1.5 transition-colors">
+                  @if (b.logo) {
+                    <img [src]="b.logo" [alt]="" loading="lazy" class="h-5 w-auto max-w-[54px] object-contain">
+                  }
                   {{ b.name }}
                   <span class="text-[10px] text-[#C8A882] tabular">{{ b.products_count }}</span>
                 </a>
@@ -553,11 +556,16 @@
 
     <!-- Track -->
     <div class="marquee-track py-2" aria-hidden="true">
-      @for (brand of marqueeBrands; track $index) {
+      @for (brand of marqueeBrands(); track $index) {
         <div class="flex items-center shrink-0 px-10">
-          <span class="font-black text-2xl text-[#3B2A1A]/20 tracking-[0.15em] uppercase hover:text-brand-orange/60 transition-colors cursor-default">
-            {{ brand }}
-          </span>
+          @if (brand.logo) {
+            <img [src]="brand.logo" [alt]="brand.name" loading="lazy"
+                 class="h-11 w-auto max-w-[150px] object-contain opacity-45 hover:opacity-100 transition-opacity">
+          } @else {
+            <span class="font-black text-2xl text-[#3B2A1A]/20 tracking-[0.15em] uppercase hover:text-brand-orange/60 transition-colors cursor-default">
+              {{ brand.name }}
+            </span>
+          }
           <span class="ml-10 w-1.5 h-1.5 bg-brand-orange/25 rotate-45 shrink-0 inline-block"></span>
         </div>
       }
@@ -570,11 +578,16 @@
     <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#FAF7F0] to-transparent z-10 pointer-events-none"></div>
 
     <div class="marquee-track py-2" style="animation-direction: reverse; animation-duration: 36s;" aria-hidden="true">
-      @for (brand of marqueeBrands; track $index) {
+      @for (brand of marqueeBrands(); track $index) {
         <div class="flex items-center shrink-0 px-10">
-          <span class="font-serif italic text-xl text-[#3B2A1A]/12 tracking-[0.1em] uppercase cursor-default">
-            {{ brand }}
-          </span>
+          @if (brand.logo) {
+            <img [src]="brand.logo" [alt]="" loading="lazy"
+                 class="h-8 w-auto max-w-[120px] object-contain opacity-20">
+          } @else {
+            <span class="font-serif italic text-xl text-[#3B2A1A]/12 tracking-[0.1em] uppercase cursor-default">
+              {{ brand.name }}
+            </span>
+          }
           <span class="ml-10 w-1 h-1 bg-[#C8A882]/30 rounded-full shrink-0 inline-block"></span>
         </div>
       }
