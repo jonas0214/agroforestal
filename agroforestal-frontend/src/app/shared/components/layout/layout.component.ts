@@ -37,7 +37,7 @@ export class LayoutComponent implements OnInit {
 
     if (isPlatformBrowser(this.platformId)) {
       // La mascota "saluda" desde el botón de WhatsApp tras unos segundos
-      setTimeout(() => { if (this.whatsappNumber()) this.showChatBubble.set(true); }, 4000);
+      setTimeout(() => this.showChatBubble.set(true), 4000);
     }
   }
 
@@ -58,5 +58,31 @@ export class LayoutComponent implements OnInit {
   whatsappLink(): string {
     const msg = encodeURIComponent('Hola, vengo de la página web y quiero más información.');
     return `https://wa.me/${this.whatsappNumber()}?text=${msg}`;
+  }
+
+  /**
+   * La mascota y el botón se muestran siempre. Mientras no haya número
+   * configurado en /admin/configuracion, el botón lleva al formulario de
+   * cotización en vez de a un wa.me inexistente: es la misma intención y
+   * evita repetir el enlace roto que reportó el cliente.
+   * Al cargar el número, pasa a ser WhatsApp real sin tocar nada más.
+   */
+  chatHref(): string {
+    return this.whatsappNumber() ? this.whatsappLink() : '/cotizacion';
+  }
+
+  chatTarget(): string | null {
+    return this.whatsappNumber() ? '_blank' : null;
+  }
+
+  chatLabel(): string {
+    return this.whatsappNumber() ? 'Escríbenos por WhatsApp' : 'Pídenos tu cotización';
+  }
+
+  onChatClick(ev: Event) {
+    if (this.whatsappNumber()) return;      // wa.me: que el enlace haga lo suyo
+    ev.preventDefault();
+    this.showChatBubble.set(false);
+    this.router.navigate(['/cotizacion']);
   }
 }
