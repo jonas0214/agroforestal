@@ -53,12 +53,16 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   jobTiles = signal<{ name: string; hint: string; cats: string[]; count: number; image: string | null }[]>([]);
   brands   = signal<Brand[]>([]);
 
-  // Atajos para el cliente que ya sabe la marca que quiere
+  /**
+   * Atajos para el cliente que ya sabe la marca. Van TODAS las que tengan
+   * equipos, en un riel deslizable: cortar la lista escondía el catálogo
+   * de marcas, que es parte de lo que se vende.
+   * Ordenadas por cantidad de equipos, así STIHL abre el riel.
+   */
   topBrands = computed(() =>
     [...this.brands()]
       .filter(b => b.products_count === undefined || b.products_count > 0)
-      .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0))
-      .slice(0, 6));
+      .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0)));
 
   // Buscador de la vitrina
   query         = '';

@@ -197,22 +197,49 @@
         }
       </div>
 
-      <!-- Atajos de marca -->
-      @if (topBrands().length > 0) {
-        <div class="flex flex-wrap items-center gap-x-2 gap-y-2 mt-4">
-          <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mr-1">Por marca</span>
-          @for (b of topBrands(); track b.id) {
-            <a [routerLink]="['/catalogo']" [queryParams]="{ brand: b.slug }"
-               class="text-[11px] font-bold uppercase tracking-[0.1em] text-[#3B2A1A]/70 hover:text-brand-orange border border-[#E8DDD0] hover:border-brand-orange rounded-full px-3.5 py-1.5 transition-colors">
-              {{ b.name }}
-            </a>
-          }
-          <a routerLink="/catalogo" class="text-[11px] font-bold uppercase tracking-[0.1em] text-brand-orange hover:underline px-2 py-1.5">
-            Ver las {{ brands().length }} marcas →
-          </a>
-        </div>
-      }
     </div>
+
+    <!-- Riel de marcas a todo el ancho: se desliza, para que se note que hay muchas más -->
+    @if (topBrands().length > 0) {
+      <div class="mt-5" data-aos="fade-up">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060]">
+              Por marca <span class="text-[#C8A882]">· {{ topBrands().length }}</span>
+            </span>
+            <div class="hidden sm:flex items-center gap-1.5">
+              <button type="button" (click)="brandRail.scrollBy({ left: -320, behavior: 'smooth' })"
+                      aria-label="Ver marcas anteriores"
+                      class="w-7 h-7 rounded-full border border-[#E8DDD0] hover:border-brand-orange text-[#3B2A1A] hover:text-brand-orange flex items-center justify-center transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button type="button" (click)="brandRail.scrollBy({ left: 320, behavior: 'smooth' })"
+                      aria-label="Ver más marcas"
+                      class="w-7 h-7 rounded-full border border-[#E8DDD0] hover:border-brand-orange text-[#3B2A1A] hover:text-brand-orange flex items-center justify-center transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="relative">
+            <div #brandRail class="flex gap-2 overflow-x-auto pb-1.5 snap-x rail-scroll">
+              @for (b of topBrands(); track b.id) {
+                <a [routerLink]="['/catalogo']" [queryParams]="{ brand: b.slug }"
+                   class="snap-start shrink-0 inline-flex items-baseline gap-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3B2A1A]/70 hover:text-brand-orange bg-white border border-[#E8DDD0] hover:border-brand-orange rounded-full px-3.5 py-2 transition-colors">
+                  {{ b.name }}
+                  <span class="text-[10px] text-[#C8A882] tabular">{{ b.products_count }}</span>
+                </a>
+              }
+              <a routerLink="/catalogo"
+                 class="snap-start shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-brand-orange border border-brand-orange/30 hover:bg-brand-orange hover:text-white rounded-full px-4 py-2 transition-colors">
+                Ver todo
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              </a>
+            </div>
+          <!-- el degradado avisa que el riel continúa -->
+          <div class="pointer-events-none absolute right-0 top-0 bottom-1.5 w-14 bg-gradient-to-l from-white to-transparent"></div>
+        </div>
+      </div>
+    }
 
     <!-- ENTRADA 2 — para quien viene a mirar -->
     @if (jobTiles().length > 0) {

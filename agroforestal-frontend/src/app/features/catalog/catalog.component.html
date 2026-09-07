@@ -214,18 +214,24 @@
               @if (selectedBrands().length) { <span class="text-brand-orange">({{ selectedBrands().length }})</span> }
             </p>
 
-            <!-- Las más surtidas, al alcance -->
+            <!-- Riel por cantidad de equipos: se desliza sobre el listado alfabético -->
             @if (pinnedBrands().length > 0 && !brandQuery()) {
-              <div class="flex flex-wrap gap-1.5 mb-3 pb-3 border-b border-[#F0E8D5]">
-                @for (b of pinnedBrands(); track b.id) {
-                  <button (click)="toggleBrand(b.slug)"
-                    class="text-[10px] font-bold uppercase tracking-[0.08em] rounded-full px-2.5 py-1 border transition-colors"
-                    [ngClass]="selectedBrands().includes(b.slug)
-                      ? 'bg-brand-orange text-white border-brand-orange'
-                      : 'bg-white text-[#3B2A1A]/70 border-[#E8DDD0] hover:border-brand-orange hover:text-brand-orange'">
-                    {{ b.name }} <span class="opacity-60 tabular">{{ b.products_count }}</span>
-                  </button>
-                }
+              <div class="mb-3 pb-3 border-b border-[#F0E8D5]">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-[#C8A882] mb-1.5">Con más equipos →</p>
+                <div class="relative">
+                  <div class="flex gap-1.5 overflow-x-auto pb-1.5 snap-x rail-scroll">
+                    @for (b of pinnedBrands(); track b.id) {
+                      <button (click)="toggleBrand(b.slug)"
+                        class="snap-start shrink-0 text-[10px] font-bold uppercase tracking-[0.08em] rounded-full px-2.5 py-1.5 border transition-colors whitespace-nowrap"
+                        [ngClass]="selectedBrands().includes(b.slug)
+                          ? 'bg-brand-orange text-white border-brand-orange'
+                          : 'bg-white text-[#3B2A1A]/70 border-[#E8DDD0] hover:border-brand-orange hover:text-brand-orange'">
+                        {{ b.name }} <span class="opacity-60 tabular">{{ b.products_count }}</span>
+                      </button>
+                    }
+                  </div>
+                  <div class="pointer-events-none absolute right-0 top-0 bottom-1.5 w-8 bg-gradient-to-l from-white to-transparent"></div>
+                </div>
               </div>
             }
 

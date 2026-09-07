@@ -67,12 +67,14 @@ export class CatalogComponent implements OnInit, OnDestroy {
     return q ? this.sortedBrands().filter(b => this.matches(b.name, q)) : this.sortedBrands();
   });
 
-  /** Las marcas con más equipos, fijadas arriba para no castigar a STIHL por empezar por S. */
+  /**
+   * Marcas ordenadas por cantidad de equipos, en un riel deslizable sobre el
+   * listado alfabético: STIHL no debe quedar sepultada por empezar por S.
+   */
   pinnedBrands = computed(() =>
     [...this.brands()]
       .filter(b => (b.products_count ?? 0) > 0)
-      .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0))
-      .slice(0, 5));
+      .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0)));
 
   total       = computed(() => this.pagination().total ?? this.products().length);
   hasMore     = computed(() => this.products().length < this.total());
