@@ -19,10 +19,31 @@
   100% { transform: translateX(-50%); }
 }
 
-/* Mascota: rebote sutil + saludo del globo */
+/* Mascota: en reposo respira; cada ~9 s da un saltito y saluda,
+   para llamar la atención sin moverse todo el tiempo */
 @keyframes mascot-bounce {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-7px); }
+}
+@keyframes mascot-idle {
+  0%, 70%   { transform: translateY(0) rotate(0deg); }
+  76%       { transform: translateY(-10px) rotate(-9deg); }
+  82%       { transform: translateY(-3px) rotate(7deg); }
+  88%       { transform: translateY(-7px) rotate(-5deg); }
+  94%, 100% { transform: translateY(0) rotate(0deg); }
+}
+/* Entrada del globo desde el botón, con un pequeño rebote al final */
+@keyframes bubble-pop {
+  0%   { opacity: 0; transform: translateY(14px) scale(0.86); }
+  70%  { opacity: 1; transform: translateY(-3px) scale(1.03); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mascot-idle { animation: mascot-idle 9s ease-in-out infinite; }
+.mascot-idle:hover { animation-duration: 2.2s; }
+
+/* Quien pidió menos movimiento, que no lo tenga */
+@media (prefers-reduced-motion: reduce) {
+  .mascot-idle { animation: none; }
 }
 @keyframes bubble-in {
   0%   { opacity: 0; transform: translateY(10px) scale(0.92); }

@@ -363,18 +363,17 @@
 
     <!-- Globo + mascota (saludo dinámico) -->
     @if (showChatBubble()) {
-      <div class="flex items-end gap-1.5" style="animation: bubble-in .45s cubic-bezier(.22,1,.36,1) both;">
+      <div class="flex items-end gap-1.5" style="animation: bubble-pop .5s cubic-bezier(.22,1,.36,1) both;">
         @if (settingsService.mascotImageUrl()) {
           <img [src]="settingsService.mascotImageUrl()" alt=""
-               class="w-16 h-16 object-contain drop-shadow-xl select-none pointer-events-none shrink-0"
-               style="animation: mascot-bounce 2.4s ease-in-out infinite;">
+               class="w-16 h-16 object-contain drop-shadow-xl select-none shrink-0 mascot-idle">
         }
         <div class="relative bg-white rounded-2xl rounded-br-md shadow-2xl shadow-[#3B2A1A]/20 border border-[#E8DDD0] pl-4 pr-5 py-3 max-w-[210px] mb-1">
           <button (click)="dismissChat()" aria-label="Cerrar"
             class="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#3B2A1A] text-white flex items-center justify-center shadow-md hover:bg-brand-orange transition-colors">
             <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
-          <p class="text-[#3B2A1A] text-sm font-bold leading-snug">¿Te ayudo a cotizar? 👋</p>
+          <p class="text-[#3B2A1A] text-sm font-bold leading-snug">{{ chatMessage() }}</p>
           <a [href]="chatHref()" [attr.target]="chatTarget()" rel="noopener" (click)="onChatClick($event)"
              class="text-brand-orange text-xs font-bold inline-flex items-center gap-1 mt-1 hover:gap-2 transition-all">
             {{ chatLabel() }}

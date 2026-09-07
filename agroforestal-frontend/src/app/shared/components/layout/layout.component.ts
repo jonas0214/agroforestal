@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, inject, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
@@ -11,7 +11,7 @@ import { CartService } from '../../../core/services/cart.service';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './layout.component.html',
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
   auth            = inject(AuthService);
   settingsService = inject(SettingsService);
   cart            = inject(CartService);
@@ -26,22 +26,84 @@ export class LayoutComponent implements OnInit {
   showChatBubble = signal(false);
   currentYear    = new Date().getFullYear();
 
+  // Mensaje puntual que pisa al de la página (p. ej. al agregar un equipo)
+  private flash        = signal<string | null>(null);
+  private hideTimer: any = null;
+  private silenceUntil = 0;   // el cliente cerró el globo: no insistir
+  private lastCount    = -1;
+
+  /**
+   * La mascota habla de lo que el cliente está haciendo: no es el mismo
+   * mensaje en el catálogo que en una ficha o con equipos ya elegidos.
+   */
+  chatMessage = computed(() => {
+    const puntual = this.flash();
+    if (puntual) return puntual;
+
+    const n = this.cart.count();
+    if (n > 0) return n === 1
+      ? 'Tienes 1 equipo listo. ¿Lo cotizamos?'
+      : `Ya llevas ${n} equipos. ¿Los cotizamos?`;
+
+    const url = this.currentUrl();
+    if (url.startsWith('/catalogo/'))     return '¿Dudas con este equipo? Pregúntame.';
+    if (url.startsWith('/catalogo'))      return '¿No encuentras tu equipo? Yo te ayudo.';
+    if (url.startsWith('/servicio-tecnico')) return '¿Tu máquina necesita revisión?';
+    if (url.startsWith('/blog'))          return '¿Buscas algo para tu finca?';
+    return '¿Te ayudo a cotizar? 👋';
+  });
+
+  constructor() {
+    // Reacciona al agregar un equipo: felicita y ofrece el siguiente paso
+    effect(() => {
+      const n = this.cart.count();
+      const previo = this.lastCount;
+      this.lastCount = n;
+      if (previo < 0 || n <= previo) return;      // primera lectura o quitó algo
+      this.flash.set(n === 1
+        ? '¡Buena elección! Agrega más o cotiza ya.'
+        : `Van ${n}. ¿Sigues buscando o cotizamos?`);
+      this.saluda(6500, true);                     // aquí sí vale interrumpir
+    }, { allowSignalWrites: true });
+  }
+
+  /** Muestra el globo un rato y lo esconde solo, para no estorbar. */
+  private saluda(ms = 8000, forzar = false) {
+    if (!forzar && Date.now() < this.silenceUntil) return;
+    this.showChatBubble.set(true);
+    clearTimeout(this.hideTimer);
+    this.hideTimer = setTimeout(() => {
+      this.showChatBubble.set(false);
+      this.flash.set(null);
+    }, ms);
+  }
+
   toggleMenu() { this.mobileOpen.update(v => !v); }
   logout()     { this.auth.logout(); }
 
   ngOnInit() {
     this.currentUrl.set(this.router.url);
     this.router.events.subscribe(e => {
-      if (e instanceof NavigationEnd) this.currentUrl.set(e.urlAfterRedirects);
+      if (e instanceof NavigationEnd) {
+        this.currentUrl.set(e.urlAfterRedirects);
+        // Nueva página, nuevo mensaje: la mascota comenta dónde está
+        if (isPlatformBrowser(this.platformId)) setTimeout(() => this.saluda(7000), 2500);
+      }
     });
 
     if (isPlatformBrowser(this.platformId)) {
-      // La mascota "saluda" desde el botón de WhatsApp tras unos segundos
-      setTimeout(() => this.showChatBubble.set(true), 4000);
+      setTimeout(() => this.saluda(9000), 4000);
     }
   }
 
-  dismissChat() { this.showChatBubble.set(false); }
+  dismissChat() {
+    this.showChatBubble.set(false);
+    this.flash.set(null);
+    clearTimeout(this.hideTimer);
+    this.silenceUntil = Date.now() + 4 * 60 * 1000;   // cerrado: 4 min en silencio
+  }
+
+  ngOnDestroy() { clearTimeout(this.hideTimer); }
 
   /**
    * Número de WhatsApp en formato internacional (solo dígitos).
