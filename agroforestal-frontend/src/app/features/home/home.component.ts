@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, AfterViewInit, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, PLATFORM_ID, AfterViewInit, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProductService } from '../../core/services/product.service';
@@ -91,7 +91,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         .filter(c => c.products_count === undefined || c.products_count > 0)
         .map(cat => ({ cat, count: cat.products_count ?? 0, products: [] as Product[], loaded: false }));
       this.categoryTabs.set(tabs);
-      if (tabs.length > 0) this.loadTabProducts(0);
+      // La vitrina abre con la familia más surtida, no con la primera alfabética:
+      // un escaparate debe empezar por lo que más tenemos.
+      if (tabs.length > 0) {
+        const start = tabs.reduce((best, t, i) => t.count > tabs[best].count ? i : best, 0);
+        this.activeTab.set(start);
+        this.loadTabProducts(start);
+      }
     });
   }
 
@@ -105,6 +111,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   scrollToSection(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
+
+  activeCat      = computed(() => this.categoryTabs()[this.activeTab()]?.cat ?? null);
+  activeProducts = computed(() => this.categoryTabs()[this.activeTab()]?.products ?? []);
+  activeCount    = computed(() => this.categoryTabs()[this.activeTab()]?.count ?? 0);
 
   // La pestaña activa aún está trayendo sus productos
   tabLoading(): boolean {
@@ -121,40 +131,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadTabProducts(i: number) {
     const tab = this.categoryTabs()[i];
     if (!tab || tab.loaded) return;
-    this.productService.getProducts({ category: tab.cat.slug, perPage: 8 }).subscribe(res => {
+    this.productService.getProducts({ category: tab.cat.slug, perPage: 6 }).subscribe(res => {
       this.categoryTabs.update(tabs => tabs.map((t, idx) =>
         idx === i ? { ...t, products: res.data, count: res.total, loaded: true } : t
       ));
     });
-  }
-
-  // Llena la vitrina: productos de la categoría activa; si faltan,
-  // completa con productos de otras categorías; si aún faltan, "Próximamente".
-  displayItems(): ({ type: 'product'; product: Product } | { type: 'soon' })[] {
-    const TARGET = 4; // mínimo para llenar la fila en desktop
-    const tabs = this.categoryTabs();
-    const active = tabs[this.activeTab()];
-    if (!active || !active.loaded) return [];
-
-    const items: Product[] = [...active.products];
-    const seen = new Set(items.map(p => p.id));
-
-    if (items.length < TARGET) {
-      const filler = [
-        ...tabs.filter(t => t.cat.id !== active.cat.id).flatMap(t => t.products),
-        ...this.featuredProducts(),
-      ];
-      for (const p of filler) {
-        if (items.length >= TARGET) break;
-        if (!seen.has(p.id)) { items.push(p); seen.add(p.id); }
-      }
-    }
-
-    const result: ({ type: 'product'; product: Product } | { type: 'soon' })[] =
-      items.slice(0, 8).map(product => ({ type: 'product' as const, product }));
-
-    while (result.length < TARGET) result.push({ type: 'soon' as const });
-    return result;
   }
 
   addToCart(product: Product, ev: Event) {
