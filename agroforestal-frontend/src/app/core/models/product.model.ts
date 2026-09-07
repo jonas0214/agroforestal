@@ -6,6 +6,7 @@ export interface Category {
   image?: string;
   parent_id?: number;
   children?: Category[];
+  products_count?: number;
 }
 
 export interface Brand {

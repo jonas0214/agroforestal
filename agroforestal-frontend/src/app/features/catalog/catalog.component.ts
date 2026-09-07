@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,8 +21,24 @@ export class CatalogComponent implements OnInit {
   searchTerm = '';
   selectedCategory = '';
   selectedBrand = '';
+  sort = 'name_asc';
   currentPage = 1;
   filtersOpen = signal(false);
+
+  sortOptions = [
+    { value: 'name_asc',   label: 'Nombre (A - Z)' },
+    { value: 'name_desc',  label: 'Nombre (Z - A)' },
+    { value: 'price_asc',  label: 'Precio: menor a mayor' },
+    { value: 'price_desc', label: 'Precio: mayor a menor' },
+    { value: 'newest',     label: 'Más recientes' },
+  ];
+
+  // Orden alfabético insensible a mayúsculas y tildes (GUADAÑAS, ÁRBOLES...)
+  private byName = <T extends { name: string }>(a: T, b: T) =>
+    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+
+  sortedCategories = computed(() => [...this.categories()].sort(this.byName));
+  sortedBrands     = computed(() => [...this.brands()].sort(this.byName));
 
   constructor(
     private productService: ProductService,
@@ -37,6 +53,7 @@ export class CatalogComponent implements OnInit {
       this.selectedCategory = params['category'] || '';
       this.selectedBrand    = params['brand'] || '';
       this.searchTerm       = params['search'] || '';
+      this.sort             = params['sort'] || 'name_asc';
       this.currentPage      = +(params['page'] || 1);
       this.loadProducts();
     });
@@ -48,6 +65,7 @@ export class CatalogComponent implements OnInit {
       category: this.selectedCategory || undefined,
       brand:    this.selectedBrand || undefined,
       search:   this.searchTerm || undefined,
+      sort:     this.sort,
       page:     this.currentPage,
     }).subscribe(res => {
       this.products.set(res.data);
@@ -62,6 +80,7 @@ export class CatalogComponent implements OnInit {
       category: this.selectedCategory || null,
       brand:    this.selectedBrand || null,
       search:   this.searchTerm || null,
+      sort:     this.sort === 'name_asc' ? null : this.sort,
       page:     null,
     }, queryParamsHandling: 'merge' });
   }
@@ -74,6 +93,7 @@ export class CatalogComponent implements OnInit {
     this.searchTerm = '';
     this.selectedCategory = '';
     this.selectedBrand = '';
+    this.sort = 'name_asc';
     this.router.navigate(['/catalogo']);
   }
 

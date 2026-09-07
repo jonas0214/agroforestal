@@ -37,6 +37,16 @@ class ProductController extends Controller
             $query->where('is_featured', true);
         }
 
+        // Ordenamiento. Por defecto alfabético para que el catálogo sea predecible.
+        // COALESCE: el precio de oferta manda sobre el precio de lista.
+        match ($request->input('sort', 'name_asc')) {
+            'name_desc'  => $query->orderBy('name', 'desc'),
+            'price_asc'  => $query->orderByRaw('COALESCE(sale_price, price) IS NULL, COALESCE(sale_price, price) ASC'),
+            'price_desc' => $query->orderByRaw('COALESCE(sale_price, price) IS NULL, COALESCE(sale_price, price) DESC'),
+            'newest'     => $query->orderBy('created_at', 'desc'),
+            default      => $query->orderBy('name', 'asc'),
+        };
+
         $perPage = min((int) $request->input('per_page', 12), 200);
 
         return response()->json($query->paginate($perPage));

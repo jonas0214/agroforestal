@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, signal, inject, PLATFORM_ID, AfterViewInit, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { forkJoin } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { CartService } from '../../core/services/cart.service';
@@ -20,10 +19,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   cart                   = inject(CartService);
 
   featuredProducts = signal<Product[]>([]);
-  categoryTabs     = signal<{ cat: Category; count: number; products: Product[] }[]>([]);
+  categoryTabs     = signal<{ cat: Category; count: number; products: Product[]; loaded: boolean }[]>([]);
   activeTab        = signal(0);
   activeSection    = signal(0);
-  showChatBubble   = signal(false);
   swiperInstance: any = null;
   swiperReady      = false;
   private observer: IntersectionObserver | null = null;
@@ -85,18 +83,15 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.productService.getProducts({ featured: true }).subscribe(res => {
       this.featuredProducts.set(res.data.slice(0, 6));
     });
-    // Vitrina con pestañas: carga categorías + sus productos.
-    // Solo se muestran categorías con productos.
+    // Vitrina con pestañas: se muestran TODAS las categorías que tengan productos.
+    // El conteo viene del API (products_count); los productos de cada pestaña se
+    // cargan bajo demanda para no disparar una petición por categoría al entrar.
     this.productService.getCategories().subscribe(cats => {
-      const top = cats.slice(0, 8);
-      if (top.length === 0) return;
-      forkJoin(top.map(cat => this.productService.getProducts({ category: cat.slug }))).subscribe(results => {
-        const tabs = top
-          .map((cat, i) => ({ cat, count: results[i].total, products: results[i].data }))
-          .filter(t => t.count > 0)
-          .slice(0, 6);
-        this.categoryTabs.set(tabs);
-      });
+      const tabs = cats
+        .filter(c => c.products_count === undefined || c.products_count > 0)
+        .map(cat => ({ cat, count: cat.products_count ?? 0, products: [] as Product[], loaded: false }));
+      this.categoryTabs.set(tabs);
+      if (tabs.length > 0) this.loadTabProducts(0);
     });
   }
 
@@ -104,26 +99,33 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => this.initSwiper(), 150);
       this.initSectionObserver();
-      // La mascota "saluda" desde el botón de WhatsApp tras unos segundos
-      setTimeout(() => this.showChatBubble.set(true), 4000);
     }
-  }
-
-  dismissChat() {
-    this.showChatBubble.set(false);
-  }
-
-  whatsappLink(): string {
-    const num = this.settingsService.settings().whatsapp || '573000000000';
-    return 'https://wa.me/' + num.replace(/[^0-9]/g, '');
   }
 
   scrollToSection(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 
+  // La pestaña activa aún está trayendo sus productos
+  tabLoading(): boolean {
+    const tab = this.categoryTabs()[this.activeTab()];
+    return !!tab && !tab.loaded;
+  }
+
   setTab(i: number) {
     this.activeTab.set(i);
+    this.loadTabProducts(i);
+  }
+
+  // Trae los productos de una pestaña la primera vez que se abre.
+  private loadTabProducts(i: number) {
+    const tab = this.categoryTabs()[i];
+    if (!tab || tab.loaded) return;
+    this.productService.getProducts({ category: tab.cat.slug, perPage: 8 }).subscribe(res => {
+      this.categoryTabs.update(tabs => tabs.map((t, idx) =>
+        idx === i ? { ...t, products: res.data, count: res.total, loaded: true } : t
+      ));
+    });
   }
 
   // Llena la vitrina: productos de la categoría activa; si faltan,
@@ -132,19 +134,19 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const TARGET = 4; // mínimo para llenar la fila en desktop
     const tabs = this.categoryTabs();
     const active = tabs[this.activeTab()];
-    if (!active) return [];
+    if (!active || !active.loaded) return [];
 
     const items: Product[] = [...active.products];
     const seen = new Set(items.map(p => p.id));
 
     if (items.length < TARGET) {
-      for (const tab of tabs) {
-        if (tab.cat.id === active.cat.id) continue;
-        for (const p of tab.products) {
-          if (items.length >= TARGET) break;
-          if (!seen.has(p.id)) { items.push(p); seen.add(p.id); }
-        }
+      const filler = [
+        ...tabs.filter(t => t.cat.id !== active.cat.id).flatMap(t => t.products),
+        ...this.featuredProducts(),
+      ];
+      for (const p of filler) {
         if (items.length >= TARGET) break;
+        if (!seen.has(p.id)) { items.push(p); seen.add(p.id); }
       }
     }
 

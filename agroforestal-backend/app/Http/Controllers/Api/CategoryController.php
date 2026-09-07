@@ -13,7 +13,14 @@ class CategoryController extends Controller
 
     public function index()
     {
-        return response()->json(Category::where('is_active', true)->with('children')->whereNull('parent_id')->get());
+        return response()->json(
+            Category::where('is_active', true)
+                ->whereNull('parent_id')
+                ->with(['children' => fn($q) => $q->orderBy('name')])
+                ->withCount(['products' => fn($q) => $q->where('is_active', true)])
+                ->orderBy('name')
+                ->get()
+        );
     }
 
     public function show(Category $category)
