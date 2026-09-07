@@ -96,6 +96,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Al pasar el ratón por la mascota, que salude aunque esté en silencio. */
+  saludaAhora() { this.saluda(7000, true); }
+
   dismissChat() {
     this.showChatBubble.set(false);
     this.flash.set(null);
