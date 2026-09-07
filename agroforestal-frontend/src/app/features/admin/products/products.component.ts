@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../../core/services/product.service';
+import { forkJoin } from 'rxjs';
 import { Product, Category, Brand, ProductImage } from '../../../core/models/product.model';
 import { environment } from '../../../../environments/environment';
 import QRCodeStyling from 'qr-code-styling';
@@ -25,6 +26,7 @@ export class ProductsComponent implements OnInit {
   showForm       = signal(false);
   editingId      = signal<number | null>(null);
   loading        = signal(false);
+  loadingList    = signal(false);
   productImages  = signal<ProductImage[]>([]);
   coverImage     = signal<string | null>(null);
   uploadingImage = signal(false);
@@ -79,9 +81,35 @@ export class ProductsComponent implements OnInit {
     this.productService.getBrands().subscribe(b => this.brands.set(b));
   }
 
+  /**
+   * Carga TODOS los productos, no solo la primera página.
+   * Antes pedía una sola tanda de 200 y el panel cortaba ahí, escondiendo
+   * el resto del catálogo. Ahora recorre todas las páginas que reporte el API,
+   * así que sigue funcionando cuando el catálogo crezca.
+   */
   loadAll() {
-    this.productService.getProducts({ page: 1, perPage: 200, includeInactive: true })
-      .subscribe(res => this.products.set(res.data));
+    this.loadingList.set(true);
+    const perPage = 100;
+    this.productService.getProducts({ page: 1, perPage, includeInactive: true }).subscribe({
+      next: first => {
+        const lastPage = first.last_page || 1;
+        if (lastPage <= 1) {
+          this.products.set(first.data);
+          this.loadingList.set(false);
+          return;
+        }
+        const rest = Array.from({ length: lastPage - 1 }, (_, i) =>
+          this.productService.getProducts({ page: i + 2, perPage, includeInactive: true }));
+        forkJoin(rest).subscribe({
+          next: pages => {
+            this.products.set([...first.data, ...pages.flatMap(p => p.data)]);
+            this.loadingList.set(false);
+          },
+          error: () => this.loadingList.set(false),
+        });
+      },
+      error: () => this.loadingList.set(false),
+    });
   }
 
   openCreate() {
