@@ -33,6 +33,26 @@ export class LayoutComponent implements OnInit, OnDestroy {
   private lastCount    = -1;
 
   /**
+   * Estado de la mascota para animarla:
+   * 'oculta' antes de la primera entrada, 'sale' mientras se agacha al
+   * cambiar de página, 'entra' cuando aparece con rebote.
+   */
+  mascotState = signal<'oculta' | 'entra' | 'sale'>('oculta');
+  private mascotTimer: any = null;
+
+  /** La despide y la hace volver a entrar; se usa en cada cambio de página. */
+  private reaparece() {
+    clearTimeout(this.mascotTimer);
+    if (this.mascotState() === 'oculta') {
+      this.mascotTimer = setTimeout(() => this.mascotState.set('entra'), 700);
+      return;
+    }
+    this.showChatBubble.set(false);
+    this.mascotState.set('sale');
+    this.mascotTimer = setTimeout(() => this.mascotState.set('entra'), 360);
+  }
+
+  /**
    * La mascota habla de lo que el cliente está haciendo: no es el mismo
    * mensaje en el catálogo que en una ficha o con equipos ya elegidos.
    */
@@ -86,12 +106,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.router.events.subscribe(e => {
       if (e instanceof NavigationEnd) {
         this.currentUrl.set(e.urlAfterRedirects);
-        // Nueva página, nuevo mensaje: la mascota comenta dónde está
-        if (isPlatformBrowser(this.platformId)) setTimeout(() => this.saluda(7000), 2500);
+        if (isPlatformBrowser(this.platformId)) {
+          this.reaparece();
+          // Nueva página, nuevo mensaje: la mascota comenta dónde está
+          setTimeout(() => this.saluda(7000), 2500);
+        }
       }
     });
 
     if (isPlatformBrowser(this.platformId)) {
+      this.reaparece();                       // entrada al cargar la página
       setTimeout(() => this.saluda(9000), 4000);
     }
   }
@@ -106,7 +130,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.silenceUntil = Date.now() + 4 * 60 * 1000;   // cerrado: 4 min en silencio
   }
 
-  ngOnDestroy() { clearTimeout(this.hideTimer); }
+  ngOnDestroy() {
+    clearTimeout(this.hideTimer);
+    clearTimeout(this.mascotTimer);
+  }
 
   /**
    * Número de WhatsApp en formato internacional (solo dígitos).

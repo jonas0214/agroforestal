@@ -38,12 +38,30 @@
   70%  { opacity: 1; transform: translateY(-3px) scale(1.03); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+/* Entra desde abajo con un pequeño rebote, como si llegara caminando */
+@keyframes mascot-in {
+  0%   { opacity: 0; transform: translateY(70px) scale(0.75) rotate(-8deg); }
+  55%  { opacity: 1; transform: translateY(-12px) scale(1.06) rotate(3deg); }
+  75%  { transform: translateY(4px) scale(0.98) rotate(-2deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+/* Se agacha y se va al cambiar de página */
+@keyframes mascot-out {
+  0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  30%  { transform: translateY(-8px) scale(1.03) rotate(4deg); }
+  100% { opacity: 0; transform: translateY(80px) scale(0.8) rotate(-5deg); }
+}
+.mascot-enter { animation: mascot-in .62s cubic-bezier(.22,1,.36,1) both; }
+.mascot-leave { animation: mascot-out .34s cubic-bezier(.55,0,.9,.4) both; }
+
 .mascot-idle { animation: mascot-idle 9s ease-in-out infinite; }
 .mascot-idle:hover { animation-duration: 2.2s; }
 
 /* Quien pidió menos movimiento, que no lo tenga */
 @media (prefers-reduced-motion: reduce) {
-  .mascot-idle { animation: none; }
+  .mascot-idle  { animation: none; }
+  .mascot-enter { animation: none; opacity: 1; }
+  .mascot-leave { animation: none; opacity: 0; }
 }
 @keyframes bubble-in {
   0%   { opacity: 0; transform: translateY(10px) scale(0.92); }

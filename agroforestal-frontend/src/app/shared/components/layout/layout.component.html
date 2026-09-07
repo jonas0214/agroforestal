@@ -379,12 +379,14 @@
     </div>
   }
 
-  <!-- La mascota, como botón -->
+  <!-- La mascota, como botón. Entra y sale animada en cada cambio de página. -->
+  @if (mascotState() !== 'oculta') {
   <a [href]="chatHref()" [attr.target]="chatTarget()" rel="noopener"
      (click)="onChatClick($event)"
      [attr.aria-label]="chatLabel()"
      (mouseenter)="saludaAhora()"
-     class="relative block group">
+     [ngClass]="mascotState() === 'sale' ? 'mascot-leave' : 'mascot-enter'"
+     class="relative block group origin-bottom">
     @if (settingsService.mascotImageUrl()) {
       <img [src]="settingsService.mascotImageUrl()" alt=""
            class="w-24 sm:w-32 object-contain select-none mascot-idle
@@ -405,4 +407,5 @@
       </span>
     }
   </a>
+  }
 </div>
