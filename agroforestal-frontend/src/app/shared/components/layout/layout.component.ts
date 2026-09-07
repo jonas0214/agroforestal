@@ -49,7 +49,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
     this.showChatBubble.set(false);
     this.mascotState.set('sale');
-    this.mascotTimer = setTimeout(() => this.mascotState.set('entra'), 360);
+    this.mascotTimer = setTimeout(() => this.mascotState.set('entra'), 470);
   }
 
   /**
