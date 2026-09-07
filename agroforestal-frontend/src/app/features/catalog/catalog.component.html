@@ -43,35 +43,42 @@
       <!-- Toggle filtros mobile -->
       <button (click)="filtersOpen.set(!filtersOpen())"
         class="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-        [class.bg-brand-orange]="filtersOpen() || selectedCategory || selectedBrand"
-        [class.text-white]="filtersOpen() || selectedCategory || selectedBrand"
-        [class.bg-[#FAF7F0]]="!filtersOpen() && !selectedCategory && !selectedBrand"
-        [class.text-[#3B2A1A]]="!filtersOpen() && !selectedCategory && !selectedBrand"
+        [class.bg-brand-orange]="filtersOpen() || filterCount() > 0"
+        [class.text-white]="filtersOpen() || filterCount() > 0"
+        [class.bg-[#FAF7F0]]="!filtersOpen() && filterCount() === 0"
+        [class.text-[#3B2A1A]]="!filtersOpen() && filterCount() === 0"
         style="border: 1px solid #E8DDD0;">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
         </svg>
         Filtros
-        @if (selectedCategory || selectedBrand) {
-          <span class="w-2 h-2 bg-white rounded-full"></span>
+        @if (filterCount() > 0) {
+          <span class="min-w-[18px] h-[18px] px-1 bg-white text-brand-orange text-[10px] font-black rounded-full flex items-center justify-center">{{ filterCount() }}</span>
         }
       </button>
     </div>
 
     <!-- Chips de filtros activos -->
-    @if (selectedCategory || selectedBrand) {
+    @if (filterCount() > 0) {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex flex-wrap gap-2">
-        @if (selectedCategory) {
-          <button (click)="selectedCategory = ''; applyFilters()"
+        @for (slug of selectedCategories(); track slug) {
+          <button (click)="toggleCategory(slug)"
             class="flex items-center gap-1.5 bg-brand-orange/10 text-brand-orange text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-orange/20">
-            {{ getCategoryName(selectedCategory) }}
+            {{ getCategoryName(slug) }}
             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         }
-        @if (selectedBrand) {
-          <button (click)="selectedBrand = ''; applyFilters()"
-            class="flex items-center gap-1.5 bg-brand-orange/10 text-brand-orange text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-orange/20">
-            {{ getBrandName(selectedBrand) }}
+        @for (slug of selectedBrands(); track slug) {
+          <button (click)="toggleBrand(slug)"
+            class="flex items-center gap-1.5 bg-brand-green/10 text-brand-green text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-green/20">
+            {{ getBrandName(slug) }}
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        }
+        @if (onlyAvailable()) {
+          <button (click)="toggleAvailable()"
+            class="flex items-center gap-1.5 bg-brand-green/10 text-brand-green text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-green/20">
+            Solo disponibles
             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         }
@@ -83,9 +90,10 @@
   <!-- Filtros expandibles mobile -->
   @if (filtersOpen()) {
     <div class="lg:hidden bg-white border-b border-[#E8DDD0] px-4 py-5">
-      <div class="max-w-7xl mx-auto">
+      <div class="max-w-7xl mx-auto space-y-6">
+
         <!-- Ordenar -->
-        <div class="sm:hidden mb-6">
+        <div class="sm:hidden">
           <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Ordenar por</p>
           <select [(ngModel)]="sort" (change)="applyFilters()" aria-label="Ordenar productos"
             class="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-[#3B2A1A] bg-[#FAF7F0] border border-[#E8DDD0] focus:outline-none focus:border-brand-orange">
@@ -94,40 +102,52 @@
             }
           </select>
         </div>
-      </div>
-      <div class="max-w-7xl mx-auto grid grid-cols-2 gap-6">
-        <!-- Categorías -->
-        <div>
-          <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Categoría</p>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="cat-m" value="" [(ngModel)]="selectedCategory" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
-              <span class="text-sm text-[#3B2A1A]">Todas</span>
-            </label>
-            @for (cat of sortedCategories(); track cat.id) {
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="cat-m" [value]="cat.slug" [(ngModel)]="selectedCategory" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
-                <span class="text-sm text-[#3B2A1A]">{{ cat.name }}</span>
-              </label>
-            }
+
+        <!-- Disponibilidad -->
+        <label class="flex items-center gap-2.5 cursor-pointer">
+          <input type="checkbox" [checked]="onlyAvailable()" (change)="toggleAvailable()" class="w-4 h-4 rounded accent-brand-orange">
+          <span class="text-sm font-semibold text-[#3B2A1A]">Solo productos disponibles</span>
+        </label>
+
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Categorías -->
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">
+              Categoría
+              @if (selectedCategories().length) { <span class="text-brand-orange">({{ selectedCategories().length }})</span> }
+            </p>
+            <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+              @for (cat of sortedCategories(); track cat.id) {
+                <label class="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" [checked]="selectedCategories().includes(cat.slug)"
+                         (change)="toggleCategory(cat.slug)" class="w-4 h-4 mt-0.5 rounded accent-brand-orange shrink-0">
+                  <span class="text-sm text-[#3B2A1A] leading-snug">{{ cat.name }}</span>
+                </label>
+              }
+            </div>
+          </div>
+          <!-- Marcas -->
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">
+              Marca
+              @if (selectedBrands().length) { <span class="text-brand-orange">({{ selectedBrands().length }})</span> }
+            </p>
+            <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+              @for (brand of sortedBrands(); track brand.id) {
+                <label class="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" [checked]="selectedBrands().includes(brand.slug)"
+                         (change)="toggleBrand(brand.slug)" class="w-4 h-4 mt-0.5 rounded accent-brand-orange shrink-0">
+                  <span class="text-sm text-[#3B2A1A] leading-snug">{{ brand.name }}</span>
+                </label>
+              }
+            </div>
           </div>
         </div>
-        <!-- Marcas -->
-        <div>
-          <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Marca</p>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="brand-m" value="" [(ngModel)]="selectedBrand" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
-              <span class="text-sm text-[#3B2A1A]">Todas</span>
-            </label>
-            @for (brand of sortedBrands(); track brand.id) {
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="brand-m" [value]="brand.slug" [(ngModel)]="selectedBrand" (change)="applyFilters(); filtersOpen.set(false)" class="accent-brand-orange">
-                <span class="text-sm text-[#3B2A1A]">{{ brand.name }}</span>
-              </label>
-            }
-          </div>
-        </div>
+
+        <button (click)="filtersOpen.set(false)"
+          class="w-full bg-[#3B2A1A] text-white text-xs font-bold uppercase tracking-widest py-3 rounded-xl">
+          Ver {{ total() }} resultado{{ total() !== 1 ? 's' : '' }}
+        </button>
       </div>
     </div>
   }
@@ -137,34 +157,61 @@
     <div class="flex gap-8">
 
       <!-- Sidebar desktop -->
-      <aside class="hidden lg:block w-52 shrink-0">
-        <div class="bg-white rounded-2xl border border-[#E8DDD0] p-5 sticky top-40">
+      <aside class="hidden lg:block w-60 shrink-0">
+        <div class="bg-white rounded-2xl border border-[#E8DDD0] p-5 sticky top-40 max-h-[calc(100vh-11rem)] overflow-y-auto">
+
+          @if (filterCount() > 0) {
+            <button (click)="clearFilters()"
+              class="w-full mb-4 text-[11px] font-bold uppercase tracking-widest text-brand-orange border border-brand-orange/30 rounded-lg py-2 hover:bg-brand-orange/5 transition-colors">
+              Limpiar filtros ({{ filterCount() }})
+            </button>
+          }
+
+          <label class="flex items-center gap-2.5 cursor-pointer mb-5 pb-5 border-b border-[#F0E8D5]">
+            <input type="checkbox" [checked]="onlyAvailable()" (change)="toggleAvailable()" class="w-4 h-4 rounded accent-brand-orange">
+            <span class="text-sm font-semibold text-[#3B2A1A]">Solo disponibles</span>
+          </label>
+
           <div class="mb-5">
-            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Categoría</p>
+            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">
+              Categoría
+              @if (selectedCategories().length) { <span class="text-brand-orange">({{ selectedCategories().length }})</span> }
+            </p>
             <div class="space-y-2">
-              <label class="flex items-center gap-2 cursor-pointer group">
-                <input type="radio" name="cat" value="" [(ngModel)]="selectedCategory" (change)="applyFilters()" class="accent-brand-orange">
-                <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">Todas</span>
-              </label>
               @for (cat of sortedCategories(); track cat.id) {
-                <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="cat" [value]="cat.slug" [(ngModel)]="selectedCategory" (change)="applyFilters()" class="accent-brand-orange">
-                  <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">{{ cat.name }}</span>
+                <label class="flex items-start gap-2 cursor-pointer group">
+                  <input type="checkbox" [checked]="selectedCategories().includes(cat.slug)"
+                         (change)="toggleCategory(cat.slug)" class="w-4 h-4 mt-0.5 rounded accent-brand-orange shrink-0">
+                  <span class="text-sm leading-snug transition-colors"
+                        [ngClass]="selectedCategories().includes(cat.slug)
+                          ? 'text-brand-orange font-semibold'
+                          : 'text-[#3B2A1A]/60 group-hover:text-[#3B2A1A]'">
+                    {{ cat.name }}
+                    @if (cat.products_count) {
+                      <span class="text-[10px] text-[#C8A882]">{{ cat.products_count }}</span>
+                    }
+                  </span>
                 </label>
               }
             </div>
           </div>
+
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">Marca</p>
+            <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mb-3">
+              Marca
+              @if (selectedBrands().length) { <span class="text-brand-orange">({{ selectedBrands().length }})</span> }
+            </p>
             <div class="space-y-2">
-              <label class="flex items-center gap-2 cursor-pointer group">
-                <input type="radio" name="brand" value="" [(ngModel)]="selectedBrand" (change)="applyFilters()" class="accent-brand-orange">
-                <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">Todas</span>
-              </label>
               @for (brand of sortedBrands(); track brand.id) {
-                <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="brand" [value]="brand.slug" [(ngModel)]="selectedBrand" (change)="applyFilters()" class="accent-brand-orange">
-                  <span class="text-sm text-[#3B2A1A]/60 group-hover:text-[#3B2A1A] transition-colors">{{ brand.name }}</span>
+                <label class="flex items-start gap-2 cursor-pointer group">
+                  <input type="checkbox" [checked]="selectedBrands().includes(brand.slug)"
+                         (change)="toggleBrand(brand.slug)" class="w-4 h-4 mt-0.5 rounded accent-brand-orange shrink-0">
+                  <span class="text-sm leading-snug transition-colors"
+                        [ngClass]="selectedBrands().includes(brand.slug)
+                          ? 'text-brand-orange font-semibold'
+                          : 'text-[#3B2A1A]/60 group-hover:text-[#3B2A1A]'">
+                    {{ brand.name }}
+                  </span>
                 </label>
               }
             </div>
@@ -199,7 +246,7 @@
         } @else {
           <!-- Contador -->
           <p class="text-[#A08060] text-xs uppercase tracking-widest mb-4">
-            {{ pagination().total || products().length }} producto{{ (pagination().total || products().length) !== 1 ? 's' : '' }}
+            Mostrando {{ products().length }} de {{ total() }} producto{{ total() !== 1 ? 's' : '' }}
           </p>
 
           <!-- Grid responsive -->
@@ -213,7 +260,7 @@
                 <div class="relative bg-[#F5EEE4] overflow-hidden"
                      style="aspect-ratio: 1;">
                   @if (product.cover_image) {
-                    <img [src]="product.cover_image" [alt]="product.name"
+                    <img [src]="product.cover_image" [alt]="product.name" loading="lazy" decoding="async"
                          class="w-full h-full object-contain p-3 sm:p-4 group-hover:scale-105 transition-transform duration-500">
                   } @else {
                     <div class="w-full h-full flex items-center justify-center">
@@ -272,22 +319,25 @@
             }
           </div>
 
-          <!-- Paginación -->
-          @if ((pagination().last_page || 1) > 1) {
-            <div class="flex items-center justify-center gap-2 mt-10">
-              @for (page of [].constructor(pagination().last_page || 1); track $index) {
-                <button (click)="goToPage($index + 1)"
-                  class="w-10 h-10 rounded-xl text-sm font-bold transition-all"
-                  [class.bg-brand-orange]="($index + 1) === currentPage"
-                  [class.text-white]="($index + 1) === currentPage"
-                  [class.shadow-lg]="($index + 1) === currentPage"
-                  [class.bg-white]="($index + 1) !== currentPage"
-                  [class.text-[#3B2A1A]]="($index + 1) !== currentPage"
-                  style="border: 1px solid #E8DDD0;">
-                  {{ $index + 1 }}
-                </button>
-              }
+          <!-- Cargar más: reemplaza los 23 botones de página -->
+          @if (hasMore()) {
+            <div class="flex flex-col items-center gap-3 mt-10">
+              <button (click)="loadMore()" [disabled]="loadingMore()"
+                class="inline-flex items-center gap-3 bg-[#3B2A1A] text-white text-xs font-bold uppercase tracking-widest px-10 py-4 rounded-xl hover:bg-brand-orange transition-colors disabled:opacity-60">
+                @if (loadingMore()) {
+                  <span class="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                  Cargando...
+                } @else {
+                  Cargar más productos
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                }
+              </button>
+              <p class="text-[#C8A882] text-xs">Quedan {{ total() - products().length }} por ver</p>
             </div>
+          } @else if (products().length > 12) {
+            <p class="text-center text-[#C8A882] text-xs uppercase tracking-widest mt-10">
+              Has visto los {{ total() }} productos
+            </p>
           }
         }
       </div>

@@ -21,11 +21,23 @@ class ProductController extends Controller
             $query->where('is_active', true);
         }
 
-        if ($request->has('category')) {
-            $query->whereHas('category', fn($q) => $q->where('slug', $request->category));
+        // category y brand aceptan varios slugs separados por coma:
+        // ?category=motosierras,guadanas&brand=stihl,honda
+        $slugs = fn($v) => array_values(array_filter(array_map('trim', explode(',', (string) $v))));
+
+        if ($request->filled('category')) {
+            $cats = $slugs($request->category);
+            $query->whereHas('category', fn($q) => $q->whereIn('slug', $cats));
         }
-        if ($request->has('brand')) {
-            $query->whereHas('brand', fn($q) => $q->where('slug', $request->brand));
+        if ($request->filled('brand')) {
+            $brands = $slugs($request->brand);
+            $query->whereHas('brand', fn($q) => $q->whereIn('slug', $brands));
+        }
+        if ($request->filled('status')) {
+            $query->whereIn('status', $slugs($request->status));
+        }
+        if ($request->boolean('on_sale')) {
+            $query->whereNotNull('sale_price');
         }
         if ($request->has('search')) {
             $search = $request->search;
@@ -47,7 +59,7 @@ class ProductController extends Controller
             default      => $query->orderBy('name', 'asc'),
         };
 
-        $perPage = min((int) $request->input('per_page', 12), 200);
+        $perPage = min((int) $request->input('per_page', 12), 300);
 
         return response()->json($query->paginate($perPage));
     }

@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { Product, Category, Brand, PaginatedResponse } from '../../core/models/product.model';
 
+const PER_PAGE = 24;
+
 @Component({
   selector: 'app-catalog',
   standalone: true,
@@ -12,15 +14,18 @@ import { Product, Category, Brand, PaginatedResponse } from '../../core/models/p
   templateUrl: './catalog.component.html',
 })
 export class CatalogComponent implements OnInit {
-  products = signal<Product[]>([]);
+  products   = signal<Product[]>([]);
   categories = signal<Category[]>([]);
-  brands = signal<Brand[]>([]);
+  brands     = signal<Brand[]>([]);
   pagination = signal<Partial<PaginatedResponse<any>>>({});
-  loading = signal(false);
+  loading    = signal(false);
+  loadingMore = signal(false);
 
   searchTerm = '';
-  selectedCategory = '';
-  selectedBrand = '';
+  // Multi-selección: el cliente puede combinar varias categorías y marcas
+  selectedCategories = signal<string[]>([]);
+  selectedBrands     = signal<string[]>([]);
+  onlyAvailable      = signal(false);
   sort = 'name_asc';
   currentPage = 1;
   filtersOpen = signal(false);
@@ -28,9 +33,9 @@ export class CatalogComponent implements OnInit {
   sortOptions = [
     { value: 'name_asc',   label: 'Nombre (A - Z)' },
     { value: 'name_desc',  label: 'Nombre (Z - A)' },
+    { value: 'newest',     label: 'Más recientes' },
     { value: 'price_asc',  label: 'Precio: menor a mayor' },
     { value: 'price_desc', label: 'Precio: mayor a menor' },
-    { value: 'newest',     label: 'Más recientes' },
   ];
 
   // Orden alfabético insensible a mayúsculas y tildes (GUADAÑAS, ÁRBOLES...)
@@ -39,6 +44,11 @@ export class CatalogComponent implements OnInit {
 
   sortedCategories = computed(() => [...this.categories()].sort(this.byName));
   sortedBrands     = computed(() => [...this.brands()].sort(this.byName));
+
+  total       = computed(() => this.pagination().total ?? this.products().length);
+  hasMore     = computed(() => this.products().length < this.total());
+  filterCount = computed(() =>
+    this.selectedCategories().length + this.selectedBrands().length + (this.onlyAvailable() ? 1 : 0));
 
   constructor(
     private productService: ProductService,
@@ -50,49 +60,90 @@ export class CatalogComponent implements OnInit {
     this.productService.getCategories().subscribe(c => this.categories.set(c));
     this.productService.getBrands().subscribe(b => this.brands.set(b));
     this.route.queryParams.subscribe(params => {
-      this.selectedCategory = params['category'] || '';
-      this.selectedBrand    = params['brand'] || '';
-      this.searchTerm       = params['search'] || '';
-      this.sort             = params['sort'] || 'name_asc';
-      this.currentPage      = +(params['page'] || 1);
+      this.selectedCategories.set(this.parseList(params['category']));
+      this.selectedBrands.set(this.parseList(params['brand']));
+      this.onlyAvailable.set(params['disponibles'] === '1');
+      this.searchTerm = params['search'] || '';
+      this.sort       = params['sort'] || 'name_asc';
+      this.currentPage = 1;
       this.loadProducts();
     });
   }
 
-  loadProducts() {
-    this.loading.set(true);
-    this.productService.getProducts({
-      category: this.selectedCategory || undefined,
-      brand:    this.selectedBrand || undefined,
+  private parseList(raw: string | undefined): string[] {
+    return (raw || '').split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  private queryFor(page: number) {
+    return {
+      category: this.selectedCategories().join(',') || undefined,
+      brand:    this.selectedBrands().join(',') || undefined,
+      status:   this.onlyAvailable() ? 'available' : undefined,
       search:   this.searchTerm || undefined,
       sort:     this.sort,
-      page:     this.currentPage,
-    }).subscribe(res => {
+      page,
+      perPage:  PER_PAGE,
+    };
+  }
+
+  loadProducts() {
+    this.loading.set(true);
+    this.currentPage = 1;
+    this.productService.getProducts(this.queryFor(1)).subscribe(res => {
       this.products.set(res.data);
       this.pagination.set(res);
       this.loading.set(false);
     });
   }
 
-  applyFilters() {
-    this.currentPage = 1;
-    this.router.navigate([], { queryParams: {
-      category: this.selectedCategory || null,
-      brand:    this.selectedBrand || null,
-      search:   this.searchTerm || null,
-      sort:     this.sort === 'name_asc' ? null : this.sort,
-      page:     null,
-    }, queryParamsHandling: 'merge' });
+  // Añade la siguiente tanda al listado actual en vez de reemplazarlo
+  loadMore() {
+    if (this.loadingMore() || !this.hasMore()) return;
+    this.loadingMore.set(true);
+    const next = this.currentPage + 1;
+    this.productService.getProducts(this.queryFor(next)).subscribe({
+      next: res => {
+        this.currentPage = next;
+        this.products.update(list => [...list, ...res.data]);
+        this.pagination.set(res);
+        this.loadingMore.set(false);
+      },
+      error: () => this.loadingMore.set(false),
+    });
   }
 
-  goToPage(page: number) {
-    this.router.navigate([], { queryParams: { page }, queryParamsHandling: 'merge' });
+  toggleCategory(slug: string) {
+    this.selectedCategories.update(list =>
+      list.includes(slug) ? list.filter(s => s !== slug) : [...list, slug]);
+    this.applyFilters();
+  }
+
+  toggleBrand(slug: string) {
+    this.selectedBrands.update(list =>
+      list.includes(slug) ? list.filter(s => s !== slug) : [...list, slug]);
+    this.applyFilters();
+  }
+
+  toggleAvailable() {
+    this.onlyAvailable.update(v => !v);
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    this.router.navigate([], { queryParams: {
+      category:    this.selectedCategories().join(',') || null,
+      brand:       this.selectedBrands().join(',') || null,
+      disponibles: this.onlyAvailable() ? '1' : null,
+      search:      this.searchTerm || null,
+      sort:        this.sort === 'name_asc' ? null : this.sort,
+    }, queryParamsHandling: 'merge' });
   }
 
   clearFilters() {
     this.searchTerm = '';
-    this.selectedCategory = '';
-    this.selectedBrand = '';
+    this.selectedCategories.set([]);
+    this.selectedBrands.set([]);
+    this.onlyAvailable.set(false);
     this.sort = 'name_asc';
     this.router.navigate(['/catalogo']);
   }

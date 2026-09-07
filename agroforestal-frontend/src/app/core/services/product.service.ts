@@ -9,7 +9,7 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  getProducts(filters: { category?: string; brand?: string; search?: string; featured?: boolean; page?: number; perPage?: number; includeInactive?: boolean; sort?: string } = {}) {
+  getProducts(filters: { category?: string; brand?: string; search?: string; featured?: boolean; page?: number; perPage?: number; includeInactive?: boolean; sort?: string; status?: string } = {}) {
     let params = new HttpParams();
     if (filters.category) params = params.set('category', filters.category);
     if (filters.brand)    params = params.set('brand', filters.brand);
@@ -19,6 +19,7 @@ export class ProductService {
     if (filters.perPage)  params = params.set('per_page', filters.perPage.toString());
     if (filters.includeInactive) params = params.set('include_inactive', '1');
     if (filters.sort)     params = params.set('sort', filters.sort);
+    if (filters.status)   params = params.set('status', filters.status);
     return this.http.get<PaginatedResponse<Product>>(`${this.api}/products`, { params });
   }
 
