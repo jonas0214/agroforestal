@@ -58,7 +58,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     [...this.brands()]
       .filter(b => b.products_count === undefined || b.products_count > 0)
       .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0))
-      .slice(0, 8));
+      .slice(0, 6));
 
   // Buscador de la vitrina
   query         = '';
