@@ -61,15 +61,17 @@
           @if (product()!.brand) {
             <!-- El logo de la marca respalda el equipo antes de leer el nombre -->
             @if (product()!.brand!.logo) {
+              <!-- Con logo no se repite el nombre debajo -->
               <a [routerLink]="['/catalogo']" [queryParams]="{ brand: product()!.brand!.slug }"
                  class="inline-block mb-3" [title]="'Ver todo de ' + product()!.brand!.name">
                 <img [src]="product()!.brand!.logo" [alt]="product()!.brand!.name"
-                     class="h-9 w-auto max-w-[150px] object-contain">
+                     class="h-10 w-auto max-w-[160px] object-contain mix-blend-multiply">
               </a>
+            } @else {
+              <p class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-orange mb-3">
+                {{ product()!.brand!.name }}
+              </p>
             }
-            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-orange mb-3">
-              {{ product()!.brand!.name }}
-            </p>
           }
 
           <!-- Nombre -->
