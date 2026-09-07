@@ -1,26 +1,71 @@
 import { Component, OnInit, OnDestroy, signal, computed, inject, PLATFORM_ID, AfterViewInit, effect } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { CartService } from '../../core/services/cart.service';
-import { Product, Category } from '../../core/models/product.model';
+import { Product, Brand } from '../../core/models/product.model';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private productService = inject(ProductService);
   private platformId     = inject(PLATFORM_ID);
+  private router         = inject(Router);
   settingsService        = inject(SettingsService);
   cart                   = inject(CartService);
 
   featuredProducts = signal<Product[]>([]);
-  categoryTabs     = signal<{ cat: Category; count: number; products: Product[]; loaded: boolean }[]>([]);
-  activeTab        = signal(0);
+
+  /**
+   * La vitrina se organiza por TRABAJO, no por categoría de bodega.
+   * Un cliente no busca "fumigadoras estacionarias": busca fumigar.
+   * Cada trabajo agrupa varias categorías y enlaza al catálogo ya filtrado
+   * con todas ellas (el catálogo acepta varios slugs separados por coma).
+   */
+  readonly jobs: { name: string; hint: string; cats: string[] }[] = [
+    { name: 'Fumigar y proteger',   hint: 'De espalda, de batería y estacionarias',
+      cats: ['fumigadoras', 'fumigadoras-de-bateria', 'fumigadoras-estacionarias', 'insufladora'] },
+    { name: 'Bombear y regar',      hint: 'Motobombas, bombas eléctricas y presión',
+      cats: ['motobombas', 'bombas-electricas', 'sistemas-de-presion', 'mangueras', 'accesorios-para-bombas'] },
+    { name: 'Desmalezar y podar',   hint: 'Guadañas, multifuncionales y cortacésped',
+      cats: ['guadanas', 'guadanas-multifuncionales', 'cortacesped'] },
+    { name: 'Limpiar y soplar',     hint: 'Hidrolavadoras y sopladoras',
+      cats: ['hidrolavadoras', 'sopladoras', 'sopladoras-a-bateria', 'sopladoras-electricas'] },
+    { name: 'Cortar y talar',       hint: 'Motosierras, podadoras de altura y cortasetos',
+      cats: ['motosierras', 'podadoras-de-altura', 'cortasetos', 'triturador-de-residuos-organicos-chipeadoras'] },
+    { name: 'Procesar la cosecha',  hint: 'Picapastos, despulpadoras y molinos',
+      cats: ['picapastos', 'despulpadoras-de-cafe', 'molino-triturador'] },
+    { name: 'Energía y motores',    hint: 'Plantas eléctricas y motores',
+      cats: ['plantas-electricas', 'motores-a-gasolina-o-diesel', 'motores-electricos'] },
+    { name: 'Preparar la tierra',   hint: 'Motoazadas, motocultores y hoyadoras',
+      cats: ['motoazadas-y-motocultores', 'hoyadoras'] },
+    { name: 'Herramienta y repuestos', hint: 'Herramienta manual y repuestos',
+      cats: ['herramientas', 'repuestos'] },
+  ];
+
+  jobTiles = signal<{ name: string; hint: string; cats: string[]; count: number; image: string | null }[]>([]);
+  brands   = signal<Brand[]>([]);
+
+  // Atajos para el cliente que ya sabe la marca que quiere
+  topBrands = computed(() =>
+    [...this.brands()]
+      .filter(b => b.products_count === undefined || b.products_count > 0)
+      .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0))
+      .slice(0, 8));
+
+  // Buscador de la vitrina
+  query         = '';
+  results       = signal<Product[]>([]);
+  searching     = signal(false);
+  searchFocused = signal(false);
+  private search$ = new Subject<string>();
   activeSection    = signal(0);
   swiperInstance: any = null;
   swiperReady      = false;
@@ -28,8 +73,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Vacío hasta que el API responda — evita flash de imágenes de fallback
   heroSlides: { bg: string; label: string }[] = [];
-
-  brands = ['STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita'];
 
   marqueeBrands = [
     'STIHL', 'Honda', 'Husqvarna', 'Kawasaki', 'Briggs & Stratton', 'Toyama', 'Makita',
@@ -60,6 +103,18 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   constructor() {
+    this.search$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(term => {
+        this.searching.set(true);
+        return this.productService.getProducts({ search: term, perPage: 6 });
+      }),
+    ).subscribe(res => {
+      this.results.set(res.data);
+      this.searching.set(false);
+    });
+
     // Reactivo: cuando settings carguen del API, actualiza slides y reinicia Swiper
     effect(() => {
       const images = this.settingsService.heroImages();
@@ -83,21 +138,33 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.productService.getProducts({ featured: true }).subscribe(res => {
       this.featuredProducts.set(res.data.slice(0, 6));
     });
-    // Vitrina con pestañas: se muestran TODAS las categorías que tengan productos.
-    // El conteo viene del API (products_count); los productos de cada pestaña se
-    // cargan bajo demanda para no disparar una petición por categoría al entrar.
+    this.productService.getBrands().subscribe(b => this.brands.set(b));
+
+    // Vitrina por trabajo: el conteo sale de sumar las categorías de cada grupo
+    // (sin peticiones extra) y la foto, de un producto representativo.
     this.productService.getCategories().subscribe(cats => {
-      const tabs = cats
-        .filter(c => c.products_count === undefined || c.products_count > 0)
-        .map(cat => ({ cat, count: cat.products_count ?? 0, products: [] as Product[], loaded: false }));
-      this.categoryTabs.set(tabs);
-      // La vitrina abre con la familia más surtida, no con la primera alfabética:
-      // un escaparate debe empezar por lo que más tenemos.
-      if (tabs.length > 0) {
-        const start = tabs.reduce((best, t, i) => t.count > tabs[best].count ? i : best, 0);
-        this.activeTab.set(start);
-        this.loadTabProducts(start);
-      }
+      const countBySlug = new Map(cats.map(c => [c.slug, c.products_count ?? 0]));
+      const tiles = this.jobs
+        .map(job => ({
+          ...job,
+          count: job.cats.reduce((sum, slug) => sum + (countBySlug.get(slug) ?? 0), 0),
+          image: null as string | null,
+        }))
+        .filter(t => t.count > 0)
+        .sort((a, b) => b.count - a.count);
+      this.jobTiles.set(tiles);
+
+      // La foto sale de la categoría PRINCIPAL del grupo (la primera declarada),
+      // no del conjunto: si no, "Cortar y talar" acaba mostrando una trituradora
+      // en vez de una motosierra, por puro orden alfabético.
+      tiles.forEach((tile, i) => {
+        this.productService.getProducts({ category: tile.cats[0], perPage: 1 })
+          .subscribe(res => {
+            const img = res.data[0]?.cover_image;
+            if (!img) return;
+            this.jobTiles.update(list => list.map((t, idx) => idx === i ? { ...t, image: img } : t));
+          });
+      });
     });
   }
 
@@ -108,34 +175,29 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  onSearch(term: string) {
+    this.searchFocused.set(true);
+    if (term.trim().length < 2) { this.results.set([]); return; }
+    this.search$.next(term.trim());
+  }
+
+  // Enter sin elegir sugerencia: al catálogo con el término
+  submitSearch() {
+    const q = this.query.trim();
+    if (!q) return;
+    this.searchFocused.set(false);
+    this.router.navigate(['/catalogo'], { queryParams: { search: q } });
+  }
+
+  openProduct(p: Product) {
+    this.query = '';
+    this.results.set([]);
+    this.searchFocused.set(false);
+    this.router.navigate(['/catalogo', p.id]);
+  }
+
   scrollToSection(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  activeCat      = computed(() => this.categoryTabs()[this.activeTab()]?.cat ?? null);
-  activeProducts = computed(() => this.categoryTabs()[this.activeTab()]?.products ?? []);
-  activeCount    = computed(() => this.categoryTabs()[this.activeTab()]?.count ?? 0);
-
-  // La pestaña activa aún está trayendo sus productos
-  tabLoading(): boolean {
-    const tab = this.categoryTabs()[this.activeTab()];
-    return !!tab && !tab.loaded;
-  }
-
-  setTab(i: number) {
-    this.activeTab.set(i);
-    this.loadTabProducts(i);
-  }
-
-  // Trae los productos de una pestaña la primera vez que se abre.
-  private loadTabProducts(i: number) {
-    const tab = this.categoryTabs()[i];
-    if (!tab || tab.loaded) return;
-    this.productService.getProducts({ category: tab.cat.slug, perPage: 6 }).subscribe(res => {
-      this.categoryTabs.update(tabs => tabs.map((t, idx) =>
-        idx === i ? { ...t, products: res.data, count: res.total, loaded: true } : t
-      ));
-    });
   }
 
   addToCart(product: Product, ev: Event) {

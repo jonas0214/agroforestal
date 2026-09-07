@@ -13,7 +13,12 @@ class BrandController extends Controller
 
     public function index()
     {
-        return response()->json(Brand::where('is_active', true)->orderBy('name')->get());
+        return response()->json(
+            Brand::where('is_active', true)
+                ->withCount(['products' => fn($q) => $q->where('is_active', true)])
+                ->orderBy('name')
+                ->get()
+        );
     }
 
     public function show(Brand $brand)

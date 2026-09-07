@@ -140,185 +140,125 @@
 <!-- ═══════════════════════════════════ -->
 <!--  COMPRAR POR CATEGORÍA             -->
 <!-- ═══════════════════════════════════ -->
-@if (categoryTabs().length > 0) {
 <section id="sec-categorias" class="py-24 lg:py-32 bg-white scroll-mt-28">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
     <!-- Encabezado -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10" data-aos="fade-up">
-      <div>
-        <div class="flex items-center gap-4 mb-4">
-          <div class="h-px w-10 bg-brand-orange/50"></div>
-          <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Explora la tienda</span>
-        </div>
-        <h2 class="font-serif text-4xl md:text-5xl text-[#3B2A1A] leading-tight">
-          Nuestra <em>vitrina</em>
-        </h2>
-        <p class="text-[#8B7355] mt-4 max-w-md">Elige una familia de equipos en el índice y mira lo que hay en tienda.</p>
+    <div class="max-w-2xl" data-aos="fade-up">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="h-px w-10 bg-brand-orange/50"></div>
+        <span class="text-brand-orange text-[10px] font-bold uppercase tracking-[0.3em]">Explora la tienda</span>
       </div>
-      <a routerLink="/catalogo"
-         class="mt-6 md:mt-0 inline-flex items-center gap-3 rounded-full border border-[#3B2A1A]/20 text-[#3B2A1A] hover:border-brand-orange hover:text-brand-orange text-xs font-semibold uppercase tracking-[0.2em] px-6 py-3 transition-all duration-300">
-        Ver catálogo completo
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-      </a>
+      <h2 class="font-serif text-4xl md:text-5xl text-[#3B2A1A] leading-tight">
+        Nuestra <em>vitrina</em>
+      </h2>
     </div>
 
-    <!-- Riel de categorías (móvil / tablet) -->
-    <div class="lg:hidden -mx-4 px-4 mb-8" data-aos="fade-up">
-      <div class="flex gap-2 overflow-x-auto pb-2 snap-x" style="scrollbar-width: thin;">
-        @for (tab of categoryTabs(); track tab.cat.id; let i = $index) {
-          <button (click)="setTab(i)"
-            class="snap-start shrink-0 inline-flex items-baseline gap-2 rounded-full px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.15em] border transition-all duration-300"
-            [ngClass]="activeTab() === i
-              ? 'bg-brand-orange text-white border-brand-orange shadow-lg shadow-brand-orange/25'
-              : 'bg-white text-[#3B2A1A] border-[#E8DDD0] hover:border-brand-orange'">
-            {{ tab.cat.name }}
-            @if (tab.count > 0) {
-              <span class="text-[10px] font-semibold opacity-70 tabular">{{ tab.count }}</span>
-            }
-          </button>
+    <!-- ENTRADA 1 — para quien ya sabe qué quiere -->
+    <div class="mt-10 max-w-3xl" data-aos="fade-up">
+      <div class="relative">
+        <svg class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C8A882] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input [(ngModel)]="query" (ngModelChange)="onSearch($event)" (keyup.enter)="submitSearch()"
+               (focus)="searchFocused.set(true)" type="text" autocomplete="off"
+               aria-label="Buscar equipos"
+               placeholder="¿Qué equipo necesitas? Ej: guadaña, motobomba, MS 162"
+               class="w-full pl-14 pr-14 py-5 rounded-2xl text-[#3B2A1A] bg-[#FAF7F0] border border-[#E8DDD0] focus:outline-none focus:border-brand-orange focus:bg-white transition-colors placeholder:text-[#C8A882]">
+        @if (searching()) {
+          <div class="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin"></div>
         }
-      </div>
-    </div>
 
-    <div class="flex gap-10">
-
-      <!-- ÍNDICE lateral (escritorio) — leído como el índice de un manual de repuestos -->
-      <aside class="hidden lg:block w-64 shrink-0" data-aos="fade-up">
-        <div class="bg-[#FAF7F0] border border-[#E8DDD0] rounded-2xl overflow-hidden">
-          <div class="flex items-baseline justify-between px-5 py-3.5 border-b border-[#E8DDD0]">
-            <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060]">Índice</span>
-            <span class="text-[10px] font-bold text-[#C8A882] tabular">{{ categoryTabs().length }}</span>
-          </div>
-          <div class="relative">
-          <div class="max-h-[34rem] overflow-y-auto py-1.5">
-            @for (tab of categoryTabs(); track tab.cat.id; let i = $index) {
-              <button (click)="setTab(i)"
-                class="relative w-full flex items-baseline gap-2 pl-5 pr-4 py-2 text-left transition-colors duration-200 group/row"
-                [class.bg-white]="activeTab() === i">
-                <!-- marcador del activo, sangrado al borde de la placa -->
-                @if (activeTab() === i) {
-                  <span class="absolute left-0 top-0 bottom-0 w-[3px] bg-brand-orange"></span>
+        <!-- Sugerencias con foto: se reconoce el equipo antes de entrar -->
+        @if (searchFocused() && query.length >= 2) {
+          <div class="absolute z-30 left-0 right-0 mt-2 bg-white border border-[#E8DDD0] rounded-2xl shadow-2xl shadow-[#3B2A1A]/10 overflow-hidden">
+            @if (results().length === 0 && !searching()) {
+              <p class="px-5 py-5 text-sm text-[#A08060]">
+                No encontramos “{{ query }}”. Escríbenos y lo conseguimos.
+              </p>
+            }
+            @for (p of results(); track p.id) {
+              <button type="button" (click)="openProduct(p)"
+                      class="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#FAF7F0] text-left border-b border-[#F0E8D5] last:border-0 transition-colors">
+                @if (p.cover_image) {
+                  <img [src]="p.cover_image" [alt]="p.name" loading="lazy"
+                       class="w-12 h-12 object-contain rounded-lg bg-[#F5EEE4] shrink-0">
+                } @else {
+                  <div class="w-12 h-12 rounded-lg bg-[#F5EEE4] shrink-0"></div>
                 }
-                <span class="text-[11px] font-bold uppercase tracking-[0.08em] leading-tight transition-colors"
-                      [ngClass]="activeTab() === i ? 'text-brand-orange' : 'text-[#3B2A1A]/65 group-hover/row:text-[#3B2A1A]'">
-                  {{ tab.cat.name }}
+                <span class="flex-1 min-w-0">
+                  <span class="block text-sm font-bold text-[#3B2A1A] truncate">{{ p.name }}</span>
+                  <span class="block text-[11px] uppercase tracking-widest text-brand-orange">{{ p.brand?.name || 'Ver equipo' }}</span>
                 </span>
-                <span class="flex-1 border-b border-dotted border-[#C8A882]/45 translate-y-[-2px] min-w-[8px]"></span>
-                <span class="text-[11px] font-bold tabular shrink-0 transition-colors"
-                      [ngClass]="activeTab() === i ? 'text-brand-orange' : 'text-[#C8A882]'">
-                  {{ tab.count }}
-                </span>
+                <svg class="w-4 h-4 text-[#C8A882] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
               </button>
             }
           </div>
-          <!-- el degradado avisa que el índice sigue hacia abajo -->
-          <div class="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#FAF7F0] to-transparent"></div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Productos de la categoría activa -->
-      <div class="flex-1 min-w-0">
-
-        @if (activeCat()) {
-          <div class="flex items-baseline justify-between gap-4 mb-5">
-            <h3 class="font-serif text-xl sm:text-2xl text-[#3B2A1A] leading-tight">{{ activeCat()!.name }}</h3>
-            <span class="text-[#A08060] text-[11px] sm:text-xs uppercase tracking-widest tabular shrink-0 whitespace-nowrap">{{ activeCount() }} equipos</span>
-          </div>
-        }
-
-        @if (tabLoading()) {
-          <div class="grid grid-cols-2 xl:grid-cols-3 gap-5">
-            @for (n of [1,2,3,4,5,6]; track n) {
-              <div class="rounded-3xl border border-[#E8DDD0] bg-[#FAF7F0]/60 min-h-[320px] animate-pulse"></div>
-            }
-          </div>
-
-        } @else if (activeProducts().length === 0) {
-          <div class="rounded-3xl border border-dashed border-[#E8DDD0] bg-[#FAF7F0]/40 py-20 text-center">
-            <p class="font-serif text-xl text-[#3B2A1A] mb-1">Aún no hay equipos publicados aquí</p>
-            <p class="text-[#A08060] text-sm">Elige otra familia en el índice o escríbenos y lo conseguimos.</p>
-          </div>
-
-        } @else {
-          <div class="grid grid-cols-2 xl:grid-cols-3 gap-5">
-            @for (product of activeProducts(); track product.id; let i = $index) {
-              <div class="group bg-white rounded-3xl overflow-hidden border border-[#E8DDD0] hover:border-brand-orange/30 hover:shadow-2xl hover:shadow-brand-orange/10 transition-all duration-300 hover:-translate-y-1 flex flex-col"
-                   data-aos="fade-up" [attr.data-aos-delay]="(i % 3) * 60">
-
-                <!-- Imagen (clic → detalle) -->
-                <a [routerLink]="['/catalogo', product.id]" class="relative block bg-[#F5EEE4] overflow-hidden" style="aspect-ratio: 1;">
-                  @if (product.cover_image) {
-                    <img [src]="product.cover_image" [alt]="product.name"
-                         class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async">
-                  } @else {
-                    <div class="w-full h-full flex items-center justify-center">
-                      <svg class="w-14 h-14 text-[#D4B896]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    </div>
-                  }
-                  <div class="absolute top-3 left-3 right-3 flex justify-between">
-                    @if (product.sale_price) {
-                      <span class="bg-brand-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">Oferta</span>
-                    } @else { <span></span> }
-                    @if (product.status === 'out_of_stock') {
-                      <span class="bg-gray-800/80 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">Agotado</span>
-                    }
-                  </div>
-                </a>
-
-                <!-- Info -->
-                <div class="p-4 flex flex-col flex-1">
-                  @if (product.brand) {
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange mb-1">{{ product.brand.name }}</p>
-                  }
-                  <a [routerLink]="['/catalogo', product.id]" class="font-bold text-[#3B2A1A] text-sm leading-snug line-clamp-2 mb-auto hover:text-brand-orange transition-colors">{{ product.name }}</a>
-
-                  <div class="mt-3 tabular">
-                    @if (product.price) {
-                      @if (product.sale_price) {
-                        <span class="text-[#C8A882] line-through text-xs mr-1.5">${{ product.price | number:'1.0-0' }}</span>
-                        <span class="font-black text-lg text-[#3B2A1A]">${{ product.sale_price | number:'1.0-0' }}</span>
-                      } @else {
-                        <span class="font-black text-lg text-[#3B2A1A]">${{ product.price | number:'1.0-0' }}</span>
-                      }
-                    } @else {
-                      <span class="text-[#A08060] text-sm italic">Consultar precio</span>
-                    }
-                  </div>
-
-                  <div class="flex items-center gap-2 mt-3">
-                    <button (click)="addToCart(product, $event)"
-                      class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#3B2A1A] hover:bg-brand-orange text-white text-[10px] font-bold uppercase tracking-[0.12em] px-3 py-2.5 transition-colors duration-300">
-                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                      Agregar
-                    </button>
-                    <a [routerLink]="['/catalogo', product.id]"
-                       class="inline-flex items-center justify-center rounded-full border border-[#E8DDD0] hover:border-brand-orange text-[#3B2A1A] hover:text-brand-orange w-9 h-9 shrink-0 transition-colors duration-300" title="Ver producto">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-
-          @if (activeCat() && activeCount() > activeProducts().length) {
-            <div class="mt-8">
-              <a [routerLink]="['/catalogo']" [queryParams]="{ category: activeCat()!.slug }"
-                 class="inline-flex items-center gap-3 rounded-full bg-[#FAF7F0] hover:bg-brand-orange hover:text-white text-[#3B2A1A] text-xs font-bold uppercase tracking-[0.2em] px-8 py-4 transition-all duration-300">
-                Ver los {{ activeCount() }} de {{ activeCat()!.name }}
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-              </a>
-            </div>
-          }
         }
       </div>
+
+      <!-- Atajos de marca -->
+      @if (topBrands().length > 0) {
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-2 mt-4">
+          <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A08060] mr-1">Por marca</span>
+          @for (b of topBrands(); track b.id) {
+            <a [routerLink]="['/catalogo']" [queryParams]="{ brand: b.slug }"
+               class="text-[11px] font-bold uppercase tracking-[0.1em] text-[#3B2A1A]/70 hover:text-brand-orange border border-[#E8DDD0] hover:border-brand-orange rounded-full px-3.5 py-1.5 transition-colors">
+              {{ b.name }}
+            </a>
+          }
+          <a routerLink="/catalogo" class="text-[11px] font-bold uppercase tracking-[0.1em] text-brand-orange hover:underline px-2 py-1.5">
+            Ver las {{ brands().length }} marcas →
+          </a>
+        </div>
+      }
     </div>
+
+    <!-- ENTRADA 2 — para quien viene a mirar -->
+    @if (jobTiles().length > 0) {
+      <div class="flex items-center gap-4 mt-16 mb-8" data-aos="fade-up">
+        <span class="text-[10px] font-bold uppercase tracking-[0.3em] text-[#A08060] whitespace-nowrap">O mira por el trabajo que necesitas</span>
+        <div class="h-px flex-1 bg-[#E8DDD0]"></div>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        @for (job of jobTiles(); track job.name; let i = $index) {
+          <a [routerLink]="['/catalogo']" [queryParams]="{ category: job.cats.join(',') }"
+             class="group relative overflow-hidden rounded-3xl bg-[#FAF7F0] border border-[#E8DDD0] hover:border-brand-orange/40 hover:shadow-2xl hover:shadow-brand-orange/10 transition-all duration-300 hover:-translate-y-1 flex flex-col"
+             data-aos="fade-up" [attr.data-aos-delay]="(i % 3) * 60">
+
+            <div class="relative h-36 sm:h-44 flex items-center justify-center p-5">
+              @if (job.image) {
+                <img [src]="job.image" [alt]="job.name" loading="lazy" decoding="async"
+                     class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500">
+              }
+              <span class="absolute top-3 right-4 text-[11px] font-black tabular text-[#C8A882]">{{ job.count }}</span>
+            </div>
+
+            <div class="bg-white border-t border-[#E8DDD0] px-5 py-4 flex items-center gap-3 flex-1">
+              <div class="min-w-0 flex-1">
+                <p class="font-serif text-lg sm:text-xl text-[#3B2A1A] leading-tight group-hover:text-brand-orange transition-colors">{{ job.name }}</p>
+                <p class="text-[#A08060] text-[11px] sm:text-xs leading-snug mt-0.5">{{ job.hint }}</p>
+              </div>
+              <span class="w-8 h-8 rounded-full bg-[#FAF7F0] group-hover:bg-brand-orange flex items-center justify-center shrink-0 transition-colors">
+                <svg class="w-3.5 h-3.5 text-brand-orange group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              </span>
+            </div>
+          </a>
+        }
+      </div>
+
+      <div class="mt-10" data-aos="fade-up">
+        <a routerLink="/catalogo"
+           class="inline-flex items-center gap-3 rounded-full border border-[#3B2A1A]/20 text-[#3B2A1A] hover:border-brand-orange hover:text-brand-orange text-xs font-semibold uppercase tracking-[0.2em] px-7 py-4 transition-all duration-300">
+          Ver el catálogo completo
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+    }
 
   </div>
 </section>
-}
 
 <!-- ═══════════════════════════════════ -->
 <!--  PRODUCTOS DESTACADOS              -->

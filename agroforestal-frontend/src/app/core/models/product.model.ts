@@ -15,6 +15,7 @@ export interface Brand {
   slug: string;
   logo?: string;
   website?: string;
+  products_count?: number;
 }
 
 export interface ProductImage {
